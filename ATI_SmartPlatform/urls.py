@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+#Import the files from the templates directory to render the HTML files.
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('external', TemplateView.as_view(template_name='base_public.html'), name='internal'),
+    path('internal/', TemplateView.as_view(template_name='base_private.html'), name='external'),
 ]

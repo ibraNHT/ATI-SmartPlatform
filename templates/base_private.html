@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load django_bootstrap5 %}
+    <meta charset="UTF-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+    <div class="d-flex">
+        <aside class="bg-light p-3" style="width: 200px;">
+            <img src="static/assets/images/logo.png" alt="Logo" style="height:50px;">
+            <h5>ATI SARL</h5>
+            <nav class="nav flex-column">
+                <a class="nav-link" href="#">Home</a>
+                <a class="nav-link" href="#">Incomes</a>
+                <a class="nav-link" href="#">Expenses</a>
+                <a class="nav-link" href="#">Balance</a>
+            </nav>
+        </aside>
+
+        <main class="p-4 flex-grow-1">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

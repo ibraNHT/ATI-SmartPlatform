@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load django_bootstrap5 %}
+    <meta charset="UTF-8">
+    <title>{% block title %}ATI SmartPlatform{% endblock %}</title>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+    <header class="text-center my-4">
+        <img src="static/assets/images/logo.png" alt="Logo" style="height:50px;">
+        <h1>COMPTABILITE ATI SARL</h1>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>
