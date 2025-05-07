@@ -1,0 +1,24 @@
+<!-- Our about.html -->
+{% extends "base_public.html" %}
+{% load static %}
+<!--  -->
+{% block title %}About Us{% endblock %}
+<!--  -->
+{% load static %}
+
+{% block content %}
+     <div class="container text-center my-5">
+         <h1>About Us</h1>
+         <p>Welcome to ATI SmartPlatform, your one-stop solution for managing your finances.</p>
+         <p>We are dedicated to providing you with the best financial management tools and services.</p>
+         <p>Our mission is to empower individuals and businesses to take control of their financial future.</p>
+         <p>With our platform, you can easily track your expenses, manage your budget, and plan for your financial goals.</p>
+         <p>Our team of experts is here to support you every step of the way.</p>
+         <p>Thank you for choosing ATI SmartPlatform!</p>
+         <img src="{% static 'assets/images/logo.png' %}" alt="Logo" style="height:200px;">
+         <div class="mt-4">
+             <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+             <a href="{% url 'register' %}" class="btn btn-secondary">Register</a>
+         </div> 
+     </div>
+ {% endblock %}

@@ -1,0 +1,36 @@
+<!-- Contacts page -->
+{% extends "base_public.html" %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+    <div class="container text-center my-5">
+        <h1>Contact Us</h1>
+        <p>If you have any questions, feel free to reach out!</p>
+        <p>Email: <a href="mailto:ibrahim.ati2024@gmail.com">
+<!--  -->  
+{% load static %}
+<!--  -->
+        <img src="{% static 'assets/images/email.png' %}" alt="Email" style="height:20px;">
+        </a></p>
+        <p>Phone: <a href="tel:+1234567890">
+        <img src="{% static 'assets/images/phone.png' %}" alt="Phone" style="height:20px;">
+        </a></p>
+        <p>Address: 123 Main Street, City, Country</p>
+        <p>Follow us on social media:</p>
+        <p>
+            <a href="https://www.facebook.com" target="_blank">
+                <img src="{% static 'assets/images/facebook.png' %}" alt="Facebook" style="height:20px;">
+            </a>
+            <a href="https://www.twitter.com" target="_blank">
+                <img src="{% static 'assets/images/twitter.png' %}" alt="Twitter" style="height:20px;">
+            </a>
+            <a href="https://www.instagram.com" target="_blank">
+                <img src="{% static 'assets/images/instagram.png' %}" alt="Instagram" style="height:20px;">
+            </a>
+            <a href="https://www.linkedin.com" target="_blank">
+                <img src="{% static 'assets/images/linkedin.png' %}" alt="LinkedIn" style="height:20px;">
+            </a>
+        </p>
+        <p>We look forward to hearing from you!</p>
+    </div>
+{% endblock %}
+<!--  -->

@@ -39,8 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+# Third party apps name
     'django_bootstrap5',  # Correct third party app name
-    'accountant_app',     # Your custom app
+    
+# My apps name
+    # 'accountant_app',     # Your custom app
+    'user_management_app',
 ]
 
 # ===============================
@@ -55,6 +59,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# ===============================
+# User authentication models
+# ===============================
+AUTH_USER_MODEL = 'user_management_app.CustomUser'
 
 # ===============================
 # URLs & WSGI
@@ -114,3 +124,9 @@ USE_TZ = True
 # Default primary key field type
 # ===============================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ===============================
+# For medias and others
+# ===============================
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
