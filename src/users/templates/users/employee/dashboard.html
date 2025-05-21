@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Dashboard | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4 animate__animated animate__fadeIn">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <img src="{{ user.personal_picture.url|default:'/static/images/default-profile.png' }}" 
+                                 class="rounded-circle border border-3 border-white" 
+                                 width="80" 
+                                 height="80"
+                                 alt="{{ user.get_full_name }}">
+                        </div>
+                        <div class="flex-grow-1 ms-4">
+                            <h2 class="mb-1">Welcome, {{ user.first_name }}!</h2>
+                            <p class="mb-0">
+                                <i class="fas fa-briefcase me-2"></i>
+                                {{ user.job_title }} in {{ user.department }}
+                            </p>
+                        </div>
+                        <div class="flex-shrink-0 text-end">
+                            <span class="badge bg-white text-primary fs-6">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                {% now "F j, Y" %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <!-- Tasks Card -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInLeft">
+            <div class="card border-start-lg border-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Pending Tasks</h6>
+                            <h2 class="mb-0">5</h2>
+                        </div>
+                        <div class="icon-circle bg-info-light">
+                            <i class="fas fa-tasks text-info"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="#" class="text-info small">View all tasks <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Card -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">
+            <div class="card border-start-lg border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">New Announcements</h6>
+                            <h2 class="mb-0">3</h2>
+                        </div>
+                        <div class="icon-circle bg-warning-light">
+                            <i class="fas fa-bullhorn text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="#" class="text-warning small">Read announcements <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Members Card -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInRight animate__delay-1s">
+            <div class="card border-start-lg border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Team Members</h6>
+                            <h2 class="mb-0">{{ team_members }}</h2>
+                        </div>
+                        <div class="icon-circle bg-success-light">
+                            <i class="fas fa-users text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="#" class="text-success small">View team <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Card -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInRight">
+            <div class="card border-start-lg border-danger h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Upcoming Events</h6>
+                            <h2 class="mb-0">2</h2>
+                        </div>
+                        <div class="icon-circle bg-danger-light">
+                            <i class="fas fa-calendar-alt text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="#" class="text-danger small">View calendar <i class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="row">
+        <!-- Recent Activities -->
+        <div class="col-lg-6 mb-4 animate__animated animate__fadeInUp">
+            <div class="card h-100">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history text-primary me-2"></i> Recent Activities
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action border-start-lg border-success">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Task Completed</h6>
+                                <small>2 hours ago</small>
+                            </div>
+                            <p class="mb-1">Quarterly report submitted</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-start-lg border-info">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">New Message</h6>
+                                <small>5 hours ago</small>
+                            </div>
+                            <p class="mb-1">From HR regarding benefits</p>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-start-lg border-warning">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">System Update</h6>
+                                <small>1 day ago</small>
+                            </div>
+                            <p class="mb-1">Platform maintenance scheduled</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-lg-6 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="card h-100">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket text-primary me-2"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="#" class="btn btn-outline-primary w-100 h-100 py-3">
+                                <i class="fas fa-file-alt fa-2x mb-2"></i><br>
+                                Submit Report
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 py-3">
+                                <i class="fas fa-calendar-check fa-2x mb-2"></i><br>
+                                Request Time Off
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="#" class="btn btn-outline-info w-100 h-100 py-3">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                                View Metrics
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="#" class="btn btn-outline-warning w-100 h-100 py-3">
+                                <i class="fas fa-tools fa-2x mb-2"></i><br>
+                                Resources
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .icon-circle {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-info-light {
+        background-color: rgba(23, 162, 184, 0.1);
+    }
+    .bg-warning-light {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    .bg-success-light {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    .bg-danger-light {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .border-start-lg {
+        border-left-width: 4px !important;
+    }
+    
+    .list-group-item {
+        transition: all 0.3s;
+    }
+    .list-group-item:hover {
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Add animation to quick action buttons
+    document.querySelectorAll('.btn-outline-primary, .btn-outline-success, .btn-outline-info, .btn-outline-warning')
+        .forEach((btn, index) => {
+            btn.style.animationDelay = `${index * 0.1}s`;
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Employee Validated | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg animate__animated animate__zoomIn">
+                <div class="card-body text-center p-5">
+                    <div class="icon-success animate__animated animate__bounceIn">
+                        <i class="fas fa-user-check fa-4x text-success"></i>
+                    </div>
+                    
+                    <h2 class="text-success mt-4 mb-3">
+                        Employee Successfully Activated!
+                    </h2>
+                    
+                    <div class="card mb-4 border-success">
+                        <div class="card-body text-start">
+                            <div class="row">
+                                <div class="col-4 fw-bold">Name:</div>
+                                <div class="col-8">{{ employee.get_full_name }}</div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-4 fw-bold">Username:</div>
+                                <div class="col-8">{{ employee.username }}</div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-4 fw-bold">Department:</div>
+                                <div class="col-8">{{ employee.department }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info animate__animated animate__fadeIn animate__delay-1s">
+                        <i class="fas fa-envelope me-2"></i>
+                        Login credentials were sent to <strong>{{ employee.personal_email }}</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-3 col-md-8 mx-auto">
+                        <a href="{% url 'validate_employees' %}" class="btn btn-success">
+                            <i class="fas fa-user-check me-2"></i> Validate Next Employee
+                        </a>
+                        <a href="{% url 'ceo_dashboard' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .icon-success {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(46, 204, 113, 0.1);
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}
