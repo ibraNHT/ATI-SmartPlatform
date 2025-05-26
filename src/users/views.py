@@ -80,6 +80,8 @@ class CustomLoginView(LoginView):
             return redirect('users:ceo_dashboard')
         elif user.role == 'HR_MANAGER':
             return redirect('users:hr_dashboard')
+        elif user.role == 'MANAGER':
+            return redirect('users:manager_dashboard')
         return redirect('users:employee_dashboard')
 
 class CustomLogoutView(LogoutView):
@@ -103,12 +105,12 @@ class CEODashboardView(View):
     @method_decorator(ceo_required)
     def get(self, request):
         context = {
-            'total_employees': User.objects.filter(role='EMPLOYEE').count(),
-            'total_managers': User.objects.filter(role='MANAGER').count(),
+            'total_employees': User.objects.exclude(role='').count(),
+            'total_managers': User.objects.filter(role__in=['MANAGER', 'HR_MANAGER']).count(),
             'total_hr_managers': User.objects.filter(role='HR_MANAGER').count(),
-            'pending_validations': User.objects.filter(is_activated=False, role=['EMPLOYEE', 'MANAGER']).count(),
+            'pending_validations': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']).count(),
             'total_departments': len(settings.DEPARTMENTS),
-            'pending_users': User.objects.filter(is_activated=False, role=['EMPLOYEE', 'MANAGER']),
+            'pending_users': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']),
             'company_name': settings.COMPANY_NAME
         }
         return render(request, 'users/ceo/dashboard.html', context)
@@ -155,12 +157,19 @@ class HRManagerCreateView(CreateView):
         return super().form_valid(form)
     
 class EmployeeValidationView(View):
-    template_name = 'users/ceo/validate.html'
+    template_name = 'users/employee/validate.html'
+    success_url = reverse_lazy('users:validation_success')
 
     def get(self, request, id):
         employee = get_object_or_404(User, id=id, is_activated=False)
+        # Extract year from start_date
+        year = employee.start_date.year if employee.start_date else ''
+        
+        # Format department (convert to lowercase and remove spaces)
+        department = employee.department.lower().replace(' ', '') if employee.department else ''
+        
         form = EmployeeValidationForm(initial={
-            'username': f"{employee.first_name.lower()}.{employee.id[:4]}"
+            'username': f"{employee.last_name.lower()}.ati{year}@{department}"
         })
         return render(request, self.template_name, {
             'employee': employee,
@@ -168,21 +177,44 @@ class EmployeeValidationView(View):
             'company_name': settings.COMPANY_NAME
         })
         
+    def post(self, request, id):
+        employee = get_object_or_404(User, id=id, is_activated=False)
+        form = EmployeeValidationForm(request.POST)
+        
+        if form.is_valid():
+            employee.username = form.cleaned_data['username']
+            employee.is_activated = True
+            employee.set_password(form.cleaned_data['password'])
+            employee.save()
+            
+            # Send email with credentials
+            # send_credentials_email(employee, employee.username, form.cleaned_data['password'])
+            
+            messages.success(request, f'Employee {employee.first_name} has been validated successfully.')
+            return redirect(self.success_url, id=employee.id)
+        
+        return render(request, self.template_name, {
+            'employee': employee,
+            'form': form,
+            'company_name': settings.COMPANY_NAME
+        })
+        
+        
 # A class view for the ceo to look at the list of employees awaiting validation
-class EmployeeValidationListView(ListView):
-    model = User
-    template_name = 'users/ceo/validation_list.html'
-    context_object_name = 'pending_employees'
-    paginate_by = 10
-    ordering = ['-date_joined']
+# class EmployeeValidationListView(ListView):
+#     model = User
+#     template_name = 'users/ceo/validation_list.html'
+#     context_object_name = 'pending_employees'
+#     paginate_by = 10
+#     ordering = ['-date_joined']
     
-    def get_queryset(self):
-        return User.objects.filter(is_activated=False).order_by('-date_joined')
+#     def get_queryset(self):
+#         return User.objects.filter(is_activated=False).order_by('-date_joined')
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['company_name'] = settings.COMPANY_NAME
-        return context
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['company_name'] = settings.COMPANY_NAME
+#         return context
     
 
 # --- HR Manager Views ---
@@ -200,7 +232,7 @@ class HRDashboardView(View):
                 date_joined__month=timezone.now().month, role=["MANAGER", "EMPLOYEE"]
             ).count(),
             'total_departments': len(settings.DEPARTMENTS),
-            'recent_employees': User.objects.filter(role=["EMPLOYEE", "MANAGER"]).order_by('-date_joined')[:5],
+            'recent_employees': User.objects.filter(role__in=['MANAGER', 'EMPLOYEE']).order_by('-date_joined')[:5],
             'company_name': settings.COMPANY_NAME
         }
         return render(request, self.template_name, context)
@@ -219,19 +251,42 @@ class SuccessView(View):
             'company_name': settings.COMPANY_NAME
         })
 
+# The employee list view returning the employees and the user connected
 class EmployeeListView(ListView):
     model = User
-    template_name = 'users/hr_manager/employee_list.html'
+    template_name = 'users/employee/list.html'
     context_object_name = 'employees'
-    paginate_by = 10
-    ordering = ['-date_joined']
+    paginate_by = 10  # Number of employees per page
     
+    @method_decorator(login_required)
+    def get(self, request, *args, **kwargs):
+        # Filter employees based on the user's role
+        if request.user.is_superuser:
+            employees = User.objects.filter(role__in=['EMPLOYEE', 'MANAGER', 'HR_MANAGER']).order_by('-date_joined')
+        elif request.user.role == 'HR_MANAGER':
+            employees = User.objects.filter(role__in=['EMPLOYEE', 'MANAGER']).order_by('-date_joined')
+        elif request.user.role == 'MANAGER':
+            employees = User.objects.filter(department=request.user.department).order_by('-date_joined')
+        else:
+            employees = User.objects.filter(role='').order_by('-date_joined')
+            
+        print(f"Connected user: {request.user.is_superuser}, Role: {request.user.role}")
+        
+        return render(request, self.template_name, {
+            'employees': employees,
+            'company_name': settings.COMPANY_NAME,
+            'connected_user': request.user
+        })
 
 class EmployeeCreateSuccessView(View):
     template_name = 'users/success/employee_created.html'
     
-    def get(self, request, id):
-        employee = get_object_or_404(User, id=id)
+    def get(self, request):
+        employee = get_object_or_404(User, is_activated=False, role__in=['EMPLOYEE', 'MANAGER'])
+        # Ensure the employee is not activated yet
+        if employee.is_activated:
+            messages.error(request, "This employee is already activated.")
+            return redirect('users:employee_list')
         return render(request, self.template_name, {
             'employee': employee,
             'company_name': settings.COMPANY_NAME
@@ -248,41 +303,109 @@ class HRCreateSuccessView(View):
         })
 
 class ValidationSuccessView(View):
-    template_name = 'users/success/validated.html'
+    template_name = 'users/sucess/validated.html'
     
     def get(self, request, id):
         employee = get_object_or_404(User, id=id)
+        # Ensure the employee is activated and has a role
+        if not employee.is_activated or employee.role not in ['EMPLOYEE', 'MANAGER', 'HR_MANAGER']:
+            messages.error(request, "This employee is not activated or does not have a valid role.")
+            return redirect('users:ceo_employee_list')
         return render(request, self.template_name, {
             'employee': employee,
             'company_name': settings.COMPANY_NAME
         })
-        
-# views.py
-class EmployeeDashboardView(View):
-    template_name = 'users/employee/dashboard.html'
+
+# --- Manager Views ---
+class ManagerDashboardView(View):
+    template_name = 'users/manager/dashboard.html'
     
     @method_decorator(login_required)
     def get(self, request):
-        # For managers, show team count - for regular employees, show department count
+        # For managers, show team count - for regular employees, show department count and the department name
+        department_name = request.user.department if request.user.department else "No Department"
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('users:login')
+        
         if request.user.role == 'MANAGER':
             team_members = User.objects.filter(
-                department=request.user.department
+            department=request.user.department
             ).exclude(id=request.user.id).count()
         else:
             team_members = User.objects.filter(
-                department=request.user.department
+            department=request.user.department
             ).count()
             
         return render(request, self.template_name, {
             'team_members': team_members,
-            'company_name': settings.COMPANY_NAME
+            'company_name': settings.COMPANY_NAME,
+            'department_name': department_name
         })
+
+# --- Employee Views ---
+from django.views.generic import TemplateView
+from django.utils import timezone
+# from tasks.models import Task
+# from communication.models import Message
+# from events.models import Event
+from datetime import timedelta
+
+class EmployeeDashboardView(TemplateView):
+    template_name = 'users/employee/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # # Tasks data
+        # context['pending_tasks'] = Task.objects.filter(assigned_to=user, completed=False)
+        # context['overdue_tasks'] = context['pending_tasks'].filter(due_date__lt=timezone.now().date())
+        # context['completed_this_week'] = Task.objects.filter(
+        #     assigned_to=user, 
+        #     completed=True,
+        #     completed_date__gte=timezone.now().date() - timedelta(days=7)
+        # )
+        # context['recent_tasks'] = context['pending_tasks'].order_by('due_date')[:5]
+        
+        # # Communication data
+        # context['recent_messages'] = Message.objects.filter(
+        #     recipient=user
+        # ).order_by('-timestamp')[:5]
+        
+        # # Calendar/events
+        # context['upcoming_events'] = Event.objects.filter(
+        #     attendees=user,
+        #     start_time__gte=timezone.now()
+        # ).order_by('start_time')[:5]
+        
+        # One-on-ones with manager
+        # context['next_one_on_one'] = Event.objects.filter(
+        #     event_type='1on1',
+        #     attendees=user,
+        #     start_time__gte=timezone.now()
+        # ).order_by('start_time').first()
+        
+        # # Productivity score (example calculation)
+        # total_assigned = Task.objects.filter(assigned_to=user).count()
+        # completed = Task.objects.filter(assigned_to=user, completed=True).count()
+        # context['productivity_score'] = round((completed / total_assigned * 100)) if total_assigned > 0 else 100
+        
+        # PTO data (example - replace with your implementation)
+        context['pto_balance'] = 15
+        context['pto_used'] = 5
+        
+        return context
         
 class EmployeeCreateView(CreateView):
     """View for HR to register new employees"""
     form_class = UserCreationForm
     template_name = 'users/hr_manager/create_employee.html'
-    success_url = reverse_lazy('employee_creation_success')
+    # Add the success_url variable with the user id
+    success_url = reverse_lazy('users:employee_creation_success')
+    # Add the company name as an extrat context
+    extra_context = {'company_name': settings.COMPANY_NAME}
     
     @method_decorator(login_required)
     @method_decorator(hr_required)
@@ -292,12 +415,15 @@ class EmployeeCreateView(CreateView):
     def form_valid(self, form):
         employee = form.save(commit=False)
         employee.is_activated = False  # Requires CEO validation
+        employee.email= ''  # Set to empty string
+        employee.username = employee.personal_email.split('@')[0] + employee.start_date.strftime('%Y%m%d')
         employee.save()
         messages.success(self.request, 'Employee registered! Waiting for CEO validation.')
         return super().form_valid(form)
     
     def get_success_url(self):
-        return reverse('employee_creation_success', args=[self.object.id])
+        # return reverse('users:employee_creation_success', args=[self.object.id])
+        return reverse('users:employee_creation_success')
     
 # A class view called AboutMeView for every users to look at their account details with just simple informations
 class AboutMeView(View):
@@ -310,3 +436,100 @@ class AboutMeView(View):
             'company_name': settings.COMPANY_NAME
         })
 
+# --- A view to view a unique employee for the CEO, the HR Manager and the other managers ---
+class EmployeeDetailView(View):
+    template_name = 'users/employee/detail.html'
+    
+    @method_decorator(login_required)
+    def get(self, request, id):
+        employee = get_object_or_404(User, id=id)
+        connected_user = request.user
+        return render(request, self.template_name, {
+            'employee': employee,
+            'connected_user': connected_user,
+            # 'is_ceo': connected_user.is_superuser,
+            # 'is_hr_manager': connected_user.role == 'HR_MANAGER',
+            # 'is_manager': connected_user.role == 'MANAGER',
+            # 'is_employee': connected_user.role == 'EMPLOYEE',
+            'company_name': settings.COMPANY_NAME
+        })
+
+# --- A view to delete an employee for the CEO ---
+class EmployeeDeleteView(View):
+    template_name = 'users/ceo/delete_employee.html'
+    
+    @method_decorator(login_required)
+    @method_decorator(ceo_required)
+    def get(self, request, id):
+        employee = get_object_or_404(User, id=id)
+        return render(request, self.template_name, {
+            'employee': employee,
+            'company_name': settings.COMPANY_NAME
+        })
+    
+    def post(self, request, id):
+        employee = get_object_or_404(User, id=id)
+        employee.delete()
+        messages.success(request, f'Employee {employee.first_name} has been deleted successfully.')
+        return redirect('users:employee_list')  # Redirect to the employee list after deletion
+    
+# class EmployeeEditView(UpdateView):
+#     model = User
+#     form_class = UserChangeForm
+#     template_name = 'users/hr_manager/edit_employee.html'
+#     success_url = reverse_lazy('users:employee_list')
+    
+#     @method_decorator(login_required)
+#     @method_decorator(hr_required)
+#     def dispatch(self, *args, **kwargs):
+#         return super().dispatch(*args, **kwargs)
+    
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['company_name'] = settings.COMPANY_NAME
+#         return context
+    
+#     def form_valid(self, form):
+#         messages.success(self.request, 'Employee details updated successfully!')
+#         return super().form_valid(form)
+
+# --- A view to edit an employee for the HR Manager ---
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.translation import gettext as _
+
+class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserChangeForm
+    template_name = 'users/hr_manager/edit_employee.html'  # match your template path
+    context_object_name = 'employee'
+    success_url = reverse_lazy('users:employee_list')  # adjust to your success URL
+
+    @method_decorator(login_required)
+    @method_decorator(hr_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    # Ensure the user is logged in and has HR permissions
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['company_name'] = settings.COMPANY_NAME  # or get from settings
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            _(f"{self.object.get_full_name()}'s profile was updated successfully!")
+        )
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            _("Please correct the errors below.")
+        )
+        return super().form_invalid(form)
+
+    # Optional: Add permission mixin if needed
+    # from django.contrib.auth.mixins import PermissionRequiredMixin
+    # permission_required = 'users.change_employee'
+    # raise_exception = True

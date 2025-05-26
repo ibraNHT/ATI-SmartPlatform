@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
-{% comment %} Load the company name from settings {% endcomment %}
-{% with company_name=settings.COMPANY_NAME %}
-{% endwith %}
-{% comment %} Load the version from settings {% endcomment %}
-{% with version=settings.VERSION %}
-{% endwith %}
+{% load i18n %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -62,7 +58,7 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle fa-lg me-1"></i>
+                            <i class="fas fa-user-circle text-success fa-lg me-1"></i>
                             My Account
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn">
@@ -90,7 +86,8 @@
             <div class="row">
                 <div class="col text-center">
                     <p class="mb-0 text-muted">
-                        &copy; {% now "Y" %} {{ company_name }} | v{{ version }}
+                        &copy; {% now "Y" %} {{ company_name }} | v{{0.0.1}} | All rights reserved.
+
                     </p>
                 </div>
             </div>

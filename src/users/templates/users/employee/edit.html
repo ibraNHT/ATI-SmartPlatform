@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Register Employee | {{ company_name }}{% endblock %}
+{% block title %}Update Employee | {{ company_name }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -11,7 +11,7 @@
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h3 class="mb-0">
-                            <i class="fas fa-user-plus me-2"></i> Employee Registration
+                            <i class="fas fa-user-edit me-2"></i> Update Employee
                         </h3>
                         <a href="{% url 'users:hr_dashboard' %}" class="btn btn-sm btn-outline-light">
                             <i class="fas fa-arrow-left me-1"></i> Dashboard
@@ -61,8 +61,15 @@
                                     </div>
                                     <div class="col-md-6">
                                         {{ form.personal_picture|as_crispy_field }}
+                                        {% if form.instance.personal_picture %}
+                                            <div class="mt-2">
+                                                <small>Current:</small>
+                                                <img src="{{ form.instance.personal_picture.url }}" class="img-thumbnail" width="100">
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 </div>
+                            </div>
                         </div>
 
                         <!-- Professional Information -->
@@ -93,15 +100,23 @@
                                     </div>
                                 </div>
                                 {{ form.joined_files|as_crispy_field }}
+                                {% if form.instance.joined_files %}
+                                    <div class="mt-2">
+                                        <small>Current Files:</small>
+                                        <a href="{{ form.instance.joined_files.url }}" target="_blank">
+                                            {{ form.instance.joined_files.name|cut:"employee_files/" }}
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="reset" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-undo me-2"></i> Reset
-                            </button>
+                            <a href="{% url 'users:hr_dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-user-check me-2"></i> Register Employee
+                                <i class="fas fa-save me-2"></i> Update Employee
                             </button>
                         </div>
                     </form>
@@ -131,8 +146,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const jobTitleField = document.getElementById('id_job_title');
     
     if (departmentField && jobTitleField) {
+        // Initialize with current value
+        const currentJob = "{{ form.instance.job_title }}";
+        if (currentJob) {
+            const option = document.createElement('option');
+            option.value = currentJob;
+            option.textContent = currentJob;
+            option.selected = true;
+            jobTitleField.appendChild(option);
+        }
+        
         departmentField.addEventListener('change', function() {
-            // This would be replaced with your actual department-job mapping
             const departmentJobs = {
                 'HR': ['HR Manager', 'Recruiter', 'Payroll Specialist'],
                 'IT': ['Developer', 'System Admin', 'QA Engineer'],
@@ -149,6 +173,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.textContent = job;
                     jobTitleField.appendChild(option);
                 });
+            }
+        });
+    }
+    
+    // Show current image preview when new image selected
+    const pictureInput = document.getElementById('id_personal_picture');
+    if (pictureInput) {
+        pictureInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('picture-preview');
+                    if (!preview) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.id = 'picture-preview';
+                        previewDiv.className = 'mt-2';
+                        previewDiv.innerHTML = '<small>New Preview:</small><br>' + 
+                            '<img src="' + event.target.result + '" class="img-thumbnail" width="100">';
+                        pictureInput.parentNode.appendChild(previewDiv);
+                    } else {
+                        preview.innerHTML = '<small>New Preview:</small><br>' + 
+                            '<img src="' + event.target.result + '" class="img-thumbnail" width="100">';
+                    }
+                };
+                reader.readAsDataURL(e.target.files[0]);
             }
         });
     }

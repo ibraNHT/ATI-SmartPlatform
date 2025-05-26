@@ -11,9 +11,20 @@ from crispy_forms.bootstrap import (
 
 
 class UserCreationForm(UserCreationForm):
-    """Form for creating new users (employees) by the HR Manager."""     
+    """Form for creating new users (employees) by the HR Manager."""   
+    # Make password fields optional
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput,
+        required=False
+    )
+    password2 = forms.CharField(
+        label="Password confirmation",
+        widget=forms.PasswordInput,
+        required=False
+    )  
         
-    email = forms.EmailField(initial="")  # Set initial value for email
+    email = forms.EmailField(initial="", required= False)  # Set initial value for email
 
     class Meta:
         model = User
@@ -35,7 +46,10 @@ class UserCreationForm(UserCreationForm):
             "first_name",
             "last_name",
         )  #  fields
-
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for start date
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for birth date
+        }
         # Add the fields
 
     def __init__(self, *args, **kwargs):
@@ -44,6 +58,8 @@ class UserCreationForm(UserCreationForm):
             (role, label) for role, label in settings.HR_ROLES 
             if role in ["EMPLOYEE", "MANAGER"]  # Use "MANAGER" not "Manager"
         ]   # Role filtering
+        self.fields['personal_picture'].required = False  # Make personal picture optional
+        self.fields['personal_picture'].initial = "static/images/logo.png"  # Set initial value for personal picture
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Div(  # Professional Information
@@ -69,22 +85,22 @@ class UserCreationForm(UserCreationForm):
                 css_class="card",
             ),
         )
-        for field_name in self.fields:
-            self.fields[field_name].widget.attrs['readonly'] = False
-            if field_name == 'email':
-                self.fields[field_name].widget.attrs['required'] = False
-                
-    def clean(self):
-        cleaned_data = super().clean()
-        if not cleaned_data.get('personal_email'):
-            raise forms.ValidationError("Personal email is required.")
-
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = ""  # Force empty string if not provided
+        user.is_staff = True
+        user.password1 = ''  # Set to empty
+        user.password2 = ''  # Set to empty
+        user.professional_email = self.cleaned_data["professional_email"]  # Set the professional email
+        if commit:
+            user.save()
+        return user
 
 
 class UserChangeForm(forms.Form):
     """Form for updating user authentication data (for CEO)."""
-    username = forms.CharField(max_length=150)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=150, required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -133,6 +149,8 @@ class HRManagerCreationForm(forms.ModelForm):
         self.fields['role'].initial = "HR_MANAGER"
         self.fields['role'].widget.attrs['readonly'] = True
         self.fields['department'].widget.attrs['readonly'] = True
+        self.fields['personal_picture'].required = False  # Make personal picture optional
+        self.fields['personal_picture'].initial = "static/images/logo.png"  # Set initial value for personal picture
         self.helper = FormHelper()  # Initialize Crispy Form Helper
         self.helper.layout = Layout(  # Define the layout of the form
             Div(  # Personal Information
@@ -197,8 +215,8 @@ class HRManagerCreationForm(forms.ModelForm):
 
 class EmployeeValidationForm(forms.Form):
     """Form for validating employees by the CEO."""
-    username = forms.CharField(max_length=150)
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=150, required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

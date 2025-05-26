@@ -18,17 +18,17 @@ class CustomUserManager(BaseUserManager):
         It encapsulates the common logic of user creation.
         """
         if not email:
-            raise ValueError('The given email must be set')  # Raise an error if no email is provided
+            email=''
         email = self.normalize_email(email)  # Normalize the email address (e.g., convert to lowercase)
         if not username:
-            raise ValueError('The given username must be set')
+            username=''
         user = self.model(email=email, username=username, **extra_fields)  # Create a User object
         user.set_password(password)  # Set the user's password (hashing it)
         user.save(using=self._db)  # Save the User object to the database
         return user
 
     def create_user(self, email, username, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)  # Set default value for is_staff
+        extra_fields.setdefault('is_staff', True)  # Set default value for is_staff
         extra_fields.setdefault('is_superuser', False)  # Set default value for is_superuser
         return self._create_user(email, username, password, **extra_fields)  # Call the _create_user method
 
@@ -58,10 +58,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=settings.HR_ROLES, null=True, blank=True)  # Dynamic choices handled in forms/views
     job_title = models.CharField(max_length=255, null=True, blank=True)  # Dynamic choices handled in forms/views
     email = models.EmailField(_('email address'), blank=True, default="")  # Make optional
-    username = models.CharField(max_length=150, unique=True, blank=False)  # Retain username
+    username = models.CharField(max_length=150, unique=True, blank=True)  # Retain username
     # Use username as the primary key
     USERNAME_FIELD = 'username'  # Specify that 'username' is the field used for login
-    REQUIRED_FIELDS = ['email']  #  email is already required
     # ID_FIELD = 'employee_id'  # Specify the field used as the primary key
 
     # Add the fields here
@@ -77,7 +76,7 @@ class User(AbstractUser):
         max_length=10, choices=[("female", "Female"), ("male", "Male")], null=True, blank=True
     )
     birth_date = models.DateField(null=True, blank=True)  # Birth date, can be null or blank
-    personal_picture = models.FileField(upload_to="profile_pics/", null=True, blank=True)  # Personal picture, uploaded to 'profile_pics/' directory, can be null or blank
+    personal_picture = models.FileField(upload_to="profile_pics/", null=True, blank=True, default="static/images/logo.png")  # Personal picture, uploaded to 'profile_pics/' directory, can be null or blank
     is_activated = models.BooleanField(default=False)  # Flag to indicate if the profile is activated, default is False
     joined_files = models.FileField(upload_to="joined_files/", null=True, blank=True)  # Joined files, uploaded to 'joined_files/' directory, can be null or blank
 

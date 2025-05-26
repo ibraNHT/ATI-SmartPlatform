@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Employee Validation Success | {{ company_name }}{% endblock %}
+
+{% block content %}
+{% comment %} The template for a validation success message after an employee is validated by the CEO. {% endcomment %}
+
+{% block title %}Validation Success{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-check-circle me-2"></i> Validation Successful
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="lead">The employee has been successfully validated.</p>
+            <a href="{% url 'users:ceo_employees' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Employee List
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-top: 4px solid var(--success-green);
+    }
+</style>
+{% endblock %}

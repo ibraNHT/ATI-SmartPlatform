@@ -73,6 +73,13 @@ DEFAULT_FROM_EMAIL = 'ibrahim.ati2024@gmail.com.com'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx'
 
+# load data from a .env file if it exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')  # Load environment variables from .env file
+except ImportError:
+    print("Warning: dotenv module not found. Environment variables will not be loaded.")
+# If you have a .env file, you can set the SECRET_KEY there
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -91,6 +98,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.flatpages',
+    'django.contrib.humanize', # For human-readable dates, numbers, etc.
+    'django.contrib.sitemaps',  # For sitemap support
     'users',
     'bootstrap5',
     'crispy_forms',
@@ -202,7 +211,7 @@ EMAIL_HOST_USER = 'ibrahim.ati2024@gmail.com'
 EMAIL_HOST_PASSWORD = 'AcheteIci2024#'  # Use App Password, not main password
 
 # App version variable
-VERSION = "1.00"
+VERSION = "0.0.1"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"

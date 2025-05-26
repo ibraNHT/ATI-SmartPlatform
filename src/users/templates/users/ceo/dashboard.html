@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% load crispy_forms_tags %}
 
+{% comment %} The template for the CEO dashboard, displaying key statistics and quick actions. {% endcomment %}
 {% block title %}CEO Dashboard | {{ company_name }}{% endblock %}
 
 {% block content %}
@@ -95,15 +97,25 @@
                     <h5 class="mb-0"><i class="fas fa-bolt me-2"></i> Quick Actions</h5>
                 </div>
                 <div class="card-body">
+                    {% comment %} Verify if there is not a HR Manager yet {% endcomment %}
+                    {% if not total_hr_managers %}
                     <a href="{% url 'users:create_hr' %}" class="btn btn-success w-100 mb-3">
                         <i class="fas fa-user-plus me-2"></i> Create HR Manager
                     </a>
+                    {% endif %}
                     {% comment %} <a href="{% url 'users:validate_employees' %}" class="btn btn-primary w-100 mb-3"> {% endcomment %}
-                    <a href="{% url 'users:validate_employee_list' %}" class="btn btn-primary w-100 mb-3">
-                        <i class="fas fa-user-check me-2"></i> Validate Employees
+                    <a href="{% url 'users:ceo_employees_list' %}" class="btn btn-primary w-100 bg-dark text-white mb-3">
+                        <i class="fas fa-user-check me-2"></i> View and manage employees
                     </a>
-                    <a href="{% url 'users:employee_list' %}" class="btn btn-outline-secondary w-100 bg-dark text-white">
-                        <i class="fas fa-users me-2"></i> View the entire staff
+                    {% comment %} Add another actions option here for financial data, task management and others {% endcomment %}
+                    <a href="#" class="btn btn-info w-100 mb-3">
+                        <i class="fas fa-chart-line me-2"></i> Financial Overview
+                    </a>
+                    <a href="#" class="btn btn-warning w-100 mb-3">
+                        <i class="fas fa-tasks me-2"></i> Task Management
+                    </a>
+                    <a href="#" class="btn btn-secondary w-100 mb-3">
+                        <i class="fas fa-file-alt me-2"></i> Generate Reports
                     </a>
                 </div>
             </div>
@@ -135,9 +147,9 @@
                                     <td>
                                         <img src= {% static "images/logo.png" %}
                                         {% comment %} <img src="{{ user.personal_picture.url|default:'/static/images/default-profile.png' }}"  {% endcomment %}
-                                             class="rounded-circle me-2" 
-                                             width="30" 
-                                             height="30">
+                                            class="rounded-circle me-2" 
+                                            width="30" 
+                                            height="30">
                                         {{ user.get_full_name }}
                                     </td>
                                     <td>{{ user.department }}</td>
@@ -145,8 +157,8 @@
                                     <td>
                                         {% comment %} <a href="{% url 'users:validate_employee' user.employee_id %}"  {% endcomment %}
                                         <a href="#"
-                                           class="btn btn-sm btn-outline-primary">
-                                           <i class="fas fa-user-edit"></i> Review
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-user-edit"></i> Review
                                         </a>
                                     </td>
                                 </tr>

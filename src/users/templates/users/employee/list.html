@@ -12,9 +12,11 @@
                     <i class="fas fa-users me-2"></i> Employee Directory
                 </h3>
                 <div>
-                    <a href="{% url 'create_employee' %}" class="btn btn-sm btn-success me-2">
-                        <i class="fas fa-plus me-1"></i> New
+                    {% if connected_user.role == 'HR MANAGER' %}
+                    <a href="{% url 'users:create_employee' %}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-plus me-1"></i> Add Employee
                     </a>
+                    {% endif %}
                     <div class="input-group input-group-sm" style="width: 250px;">
                         <input type="text" class="form-control" placeholder="Search employees...">
                         <button class="btn btn-outline-light" type="button">
@@ -22,6 +24,25 @@
                         </button>
                     </div>
                 </div>
+                {% comment %} A go back link to the previous page according to the user {% endcomment %}
+                {% if connected_user.role == 'HR MANAGER' %}
+                <a href="{% url 'users:hr_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                {% elif connected_user.role == '' %}
+                <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                {% elif connected_user.role == 'MANAGER' %}
+                <a href="{% url 'users:manager_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                {% else %}
+                <a href="{% url 'users:employee_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                {% endif %}
+
             </div>
         </div>
         
@@ -43,7 +64,8 @@
                         {% for employee in employees %}
                         <tr class="animate__animated animate__fadeIn">
                             <td>
-                                <img src="{{ employee.personal_picture.url|default:'/static/images/logo.png' }}" 
+                                {% comment %} <img src="{{ employee.personal_picture.url|default:'/static/images/logo.png' }}"  {% endcomment %}
+                                <img src={% static "images/logo.png" %}
                                     class="rounded-circle" 
                                     width="40" 
                                     height="40"
@@ -62,20 +84,41 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="#" class="btn btn-outline-primary" 
+                                    {% comment %} View Profile Button redirecting to the view according to the connected user {% endcomment %}
+                                    {% if connected_user.is_superuser %}
+                                    <a href={% url "users:ceo_view_employee" employee.id %} class="btn btn-outline-primary" 
                                         data-bs-toggle="tooltip" title="View Profile">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    {% elif connected_user.role == 'HR_MANAGER' %}
+                                    <a href="{% url 'users:hr_view_employee' employee.id %}" class="btn btn-outline-primary"
+                                        data-bs-toggle="tooltip" title="View Profile">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if connected_user.role == 'HR_MANAGER' and not employee.is_activated %}
                                     <a href="#" class="btn btn-outline-secondary"
                                         data-bs-toggle="tooltip" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    {% if not employee.is_activated %}
+                                    {% endif %}
+                                    {% if connected_user.is_superuser %}
                                     <a href="#" class="btn btn-outline-danger"
-                                        data-bs-toggle="tooltip" title="Cancel Registration">
-                                        <i class="fas fa-times"></i>
+                                        data-bs-toggle="tooltip" title="Delete the employee">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                    {% if not employee.is_activated %}
+                                    <a href="{% url 'users:validate_employee' employee.id %}" class="btn btn-outline-success"
+                                        data-bs-toggle="tooltip" title="Validate the employee">
+                                        <i class="fas fa-check"></i>
                                     </a>
                                     {% endif %}
+                                    {% endif %}
+                                    {% comment %} <a href="{% url 'users:employee_documents' employee.id %}" class="btn btn-outline-info"
+                                        data-bs-toggle="tooltip" title="View Documents">
+                                        <i class="fas fa-file-alt"></i>
+                                    </a> {% endcomment %}
+                                    
                                 </div>
                             </td>
                         </tr>
@@ -144,16 +187,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Search functionality would be implemented here
-    const searchInput = document.querySelector('.input-group input');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                row.style.display = name.includes(searchTerm) ? '' : 'none';
-            });
+    // For simplicity, we will filter by employee name and department
+    const searchInput = document.querySelector('.input-group input[type="text"]');
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(function(row) {
+            const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+            const department = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+            if (name.includes(filter) || department.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
         });
-    }
+    });
 });
 </script>
 {% endblock %}

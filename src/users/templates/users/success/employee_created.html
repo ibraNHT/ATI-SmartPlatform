@@ -10,10 +10,8 @@
             <div class="card border-0 shadow-lg animate__animated animate__zoomIn">
                 <div class="card-body text-center p-5">
                     <div class="mb-4">
-                        <img src="{% static 'images/success-icon.png' %}" 
-                             alt="Success" 
-                             class="img-fluid" 
-                             style="max-height: 120px;">
+                        <!-- Add an animated circle user adding icon here with the <i> tag -->
+                        <i class="fas fa-user-plus fa-5x text-secondary animate__animated animate__bounceIn"></i>
                     </div>
                     
                     <h2 class="text-success mb-3">
@@ -30,10 +28,10 @@
                     </div>
                     
                     <div class="d-grid gap-3 col-md-8 mx-auto mt-4">
-                        <a href="{% url 'create_employee' %}" class="btn btn-success">
+                        <a href="{% url 'users:create_employee' %}" class="btn btn-success">
                             <i class="fas fa-user-plus me-2"></i> Register Another
                         </a>
-                        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-primary">
+                        <a href="{% url 'users:hr_dashboard' %}" class="btn btn-outline-primary">
                             <i class="fas fa-tachometer-alt me-2"></i> Return to Dashboard
                         </a>
                     </div>
