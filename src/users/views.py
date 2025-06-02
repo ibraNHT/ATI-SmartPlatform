@@ -105,7 +105,7 @@ class CEODashboardView(View):
     @method_decorator(ceo_required)
     def get(self, request):
         context = {
-            'total_employees': User.objects.exclude(role='').count(),
+            'total_employees': User.objects.exclude(is_superuser=True).count(),
             'total_managers': User.objects.filter(role__in=['MANAGER', 'HR_MANAGER']).count(),
             'total_hr_managers': User.objects.filter(role='HR_MANAGER').count(),
             'pending_validations': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']).count(),
@@ -226,10 +226,10 @@ class HRDashboardView(View):
     @method_decorator(hr_required)
     def get(self, request):
         context = {
-            'total_employees': User.objects.filter(role=["MANAGER", "EMPLOYEE"]).count(),
-            'pending_validation': User.objects.filter(is_activated=False, role=["MANAGER", "EMPLOYEE"]).count(),
+            'total_employees': User.objects.exclude(is_superuser = True).count(),
+            'pending_validations': User.objects.filter(is_activated=False, role__in=["MANAGER", "EMPLOYEE"]).count(),
             'new_this_month': User.objects.filter(
-                date_joined__month=timezone.now().month, role=["MANAGER", "EMPLOYEE"]
+                date_joined__month=timezone.now().month, role__in=["MANAGER", "EMPLOYEE"]
             ).count(),
             'total_departments': len(settings.DEPARTMENTS),
             'recent_employees': User.objects.filter(role__in=['MANAGER', 'EMPLOYEE']).order_by('-date_joined')[:5],
@@ -260,11 +260,17 @@ class EmployeeListView(ListView):
     
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
-        # Filter employees based on the user's role
+        # Firstly a list of all the employees excluding the superuser
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('users:login')
+        employees = User.objects.exclude(is_superuser=True).order_by('-date_joined')
+        # Filter employees based on the connected user's role
         if request.user.is_superuser:
-            employees = User.objects.filter(role__in=['EMPLOYEE', 'MANAGER', 'HR_MANAGER']).order_by('-date_joined')
+            employees = User.objects.exclude(is_superuser=True).order_by('-date_joined')
         elif request.user.role == 'HR_MANAGER':
-            employees = User.objects.filter(role__in=['EMPLOYEE', 'MANAGER']).order_by('-date_joined')
+            employees = User.objects.exclude(is_superuser = True).order_by('-date_joined')
         elif request.user.role == 'MANAGER':
             employees = User.objects.filter(department=request.user.department).order_by('-date_joined')
         else:
@@ -295,24 +301,24 @@ class EmployeeCreateSuccessView(View):
 class HRCreateSuccessView(View):
     template_name = 'users/success/hr_created.html'
     
-    def get(self, request, hr_id):
-        hr_manager = get_object_or_404(User, id=hr_id)
+    def get(self, request):
+        hr_manager = get_object_or_404(User.objects.filter(role='HR_MANAGER', is_activated=True))
         return render(request, self.template_name, {
             'hr_manager': hr_manager,
             'company_name': settings.COMPANY_NAME
         })
 
 class ValidationSuccessView(View):
-    template_name = 'users/sucess/validated.html'
+    template_name = 'users/employee/validated.html'
     
-    def get(self, request, id):
-        employee = get_object_or_404(User, id=id)
+    def get(self, request):
+        # employee = get_object_or_404(User.objects.filter(username=request.username))
         # Ensure the employee is activated and has a role
-        if not employee.is_activated or employee.role not in ['EMPLOYEE', 'MANAGER', 'HR_MANAGER']:
-            messages.error(request, "This employee is not activated or does not have a valid role.")
-            return redirect('users:ceo_employee_list')
+        # if not employee.is_activated or employee.role not in ['EMPLOYEE', 'MANAGER', 'HR_MANAGER']:
+        #     messages.error(request, "This employee is not activated or does not have a valid role.")
+        #     return redirect('users:ceo_employee_list')
         return render(request, self.template_name, {
-            'employee': employee,
+            # 'employee': employee,
             'company_name': settings.COMPANY_NAME
         })
 
@@ -324,6 +330,7 @@ class ManagerDashboardView(View):
     def get(self, request):
         # For managers, show team count - for regular employees, show department count and the department name
         department_name = request.user.department if request.user.department else "No Department"
+        employees = User.objects.filter(department=request.user.department).exclude(id=request.user.id)
         # Check if the user is authenticated
         if not request.user.is_authenticated:
             messages.error(request, "You must be logged in to access this page.")
@@ -341,7 +348,8 @@ class ManagerDashboardView(View):
         return render(request, self.template_name, {
             'team_members': team_members,
             'company_name': settings.COMPANY_NAME,
-            'department_name': department_name
+            'department_name': department_name,
+            'employees': employees
         })
 
 # --- Employee Views ---
@@ -352,51 +360,50 @@ from django.utils import timezone
 # from events.models import Event
 from datetime import timedelta
 
+# class ManagerDashboardView(View):
+#     template_name = 'users/manager/dashboard.html'
+    
+#     @method_decorator(login_required)
+#     def get(self, request):
+#         # For managers, show team count - for regular employees, show department count and the department name
+#         department_name = request.user.department if request.user.department else "No Department"
+#         # Check if the user is authenticated
+#         if not request.user.is_authenticated:
+#             messages.error(request, "You must be logged in to access this page.")
+#             return redirect('users:login')
+        
+#         if request.user.role == 'MANAGER':
+#             team_members = User.objects.filter(
+#             department=request.user.department
+#             ).exclude(id=request.user.id).count()
+#         else:
+#             team_members = User.objects.filter(
+#             department=request.user.department
+#             ).count()
+            
+#         return render(request, self.template_name, {
+#             'team_members': team_members,
+#             'company_name': settings.COMPANY_NAME,
+#             'department_name': department_name
+#         })
+
 class EmployeeDashboardView(TemplateView):
     template_name = 'users/employee/dashboard.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
+    @method_decorator(login_required)
+    def get(self, request):
+        employee_manager = User.objects.filter(department=request.user.department, role='MANAGER')[0]
         
-        # # Tasks data
-        # context['pending_tasks'] = Task.objects.filter(assigned_to=user, completed=False)
-        # context['overdue_tasks'] = context['pending_tasks'].filter(due_date__lt=timezone.now().date())
-        # context['completed_this_week'] = Task.objects.filter(
-        #     assigned_to=user, 
-        #     completed=True,
-        #     completed_date__gte=timezone.now().date() - timedelta(days=7)
-        # )
-        # context['recent_tasks'] = context['pending_tasks'].order_by('due_date')[:5]
+        if not request.user.is_authenticated:
+            messages.error(request, "You must be logged in to access this page")
+            return redirect('users:login')
         
-        # # Communication data
-        # context['recent_messages'] = Message.objects.filter(
-        #     recipient=user
-        # ).order_by('-timestamp')[:5]
-        
-        # # Calendar/events
-        # context['upcoming_events'] = Event.objects.filter(
-        #     attendees=user,
-        #     start_time__gte=timezone.now()
-        # ).order_by('start_time')[:5]
-        
-        # One-on-ones with manager
-        # context['next_one_on_one'] = Event.objects.filter(
-        #     event_type='1on1',
-        #     attendees=user,
-        #     start_time__gte=timezone.now()
-        # ).order_by('start_time').first()
-        
-        # # Productivity score (example calculation)
-        # total_assigned = Task.objects.filter(assigned_to=user).count()
-        # completed = Task.objects.filter(assigned_to=user, completed=True).count()
-        # context['productivity_score'] = round((completed / total_assigned * 100)) if total_assigned > 0 else 100
-        
-        # PTO data (example - replace with your implementation)
-        context['pto_balance'] = 15
-        context['pto_used'] = 5
-        
-        return context
+
+        return render(request, self.template_name, {
+            'employee_manager': employee_manager,
+            'company_name': settings.COMPANY_NAME,
+            'department_name': request.user.department
+        })
         
 class EmployeeCreateView(CreateView):
     """View for HR to register new employees"""
@@ -471,7 +478,7 @@ class EmployeeDeleteView(View):
         employee = get_object_or_404(User, id=id)
         employee.delete()
         messages.success(request, f'Employee {employee.first_name} has been deleted successfully.')
-        return redirect('users:employee_list')  # Redirect to the employee list after deletion
+        return redirect('users:ceo_employee_list')  # Redirect to the employee list after deletion
     
 # class EmployeeEditView(UpdateView):
 #     model = User

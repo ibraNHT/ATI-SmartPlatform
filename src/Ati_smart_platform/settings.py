@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # include media files
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.flatpages',
@@ -201,7 +202,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Media files (for profile pictures)
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media'  # Directory to store uploaded files
 
 # Email Configuration (if using Gmail)
 EMAIL_HOST = 'smtp.gmail.com'

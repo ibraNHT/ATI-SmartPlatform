@@ -34,12 +34,12 @@ class UserCreationForm(UserCreationForm):
             "personal_email",
             "department",
             "job_title",
+            "birth_date",
             "start_date",
             "role_description",
             "address",
             "phone_number",
             "gender",
-            "birth_date",
             "personal_picture",
             "role",
             "joined_files",
@@ -47,8 +47,8 @@ class UserCreationForm(UserCreationForm):
             "last_name",
         )  #  fields
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for start date
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for birth date
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for start date
+            'start_date': forms.DateInput(attrs={'type': 'date'}),  # Use date input for birth date
         }
         # Add the fields
 
@@ -62,17 +62,6 @@ class UserCreationForm(UserCreationForm):
         self.fields['personal_picture'].initial = "static/images/logo.png"  # Set initial value for personal picture
         self.helper = FormHelper()
         self.helper.layout = Layout(
-            Div(  # Professional Information
-                Field("email"),
-                Field("professional_email"),
-                Field("department"),
-                Field("role"),
-                Field("job_title"),
-                Field("start_date"),
-                Field("role_description"),
-                Field("joined_files"),
-                css_class="card",
-            ),
             Div(  # Personal Information
                 Field("first_name"),
                 Field("last_name"),
@@ -80,8 +69,19 @@ class UserCreationForm(UserCreationForm):
                 Field("address"),
                 Field("phone_number"),
                 Field("gender"),
-                Field("birth_date"),
+                Field("birth_date", type="date"),
                 Field("personal_picture"),
+                css_class="card",
+            ),
+            Div(  # Professional Information
+                Field("email"),
+                Field("professional_email"),
+                Field("department"),
+                Field("role"),
+                Field("job_title"),
+                Field("start_date", type="date"),
+                Field("role_description"),
+                Field("joined_files"),
                 css_class="card",
             ),
         )
@@ -160,7 +160,7 @@ class HRManagerCreationForm(forms.ModelForm):
                 Field("address"),
                 Field("phone_number"),
                 Field("gender"),
-                Field("birth_date"),
+                Field("birth_date", type="date"),
                 Field("personal_picture"),
                 Field("joined_files"),
                 css_class="card",

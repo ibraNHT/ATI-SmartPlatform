@@ -22,7 +22,7 @@ urlpatterns = [
     path('ceo/delete-employee/<int:id>/', EmployeeDeleteView.as_view(), name='delete_employee'),
     
     # HR Views
-    path('hr/', HRDashboardView.as_view(), name='hr_dashboard'),
+    path('hr/dashboard', HRDashboardView.as_view(), name='hr_dashboard'),
     path('hr/employees/', EmployeeListView.as_view(), name='hr_employees_list'),
     path('hr/create-employee/', EmployeeCreateView.as_view(), name='create_employee'),
     path('hr/view-employee/<int:id>/', EmployeeDetailView.as_view(), name='hr_view_employee'),
@@ -30,11 +30,13 @@ urlpatterns = [
     
     # Manager Views
     path('manager/dashboard/', ManagerDashboardView.as_view(), name='manager_dashboard'),
+    path('manager/employees/', EmployeeListView.as_view(), name='manager_employees_list'),
+    path('hr/view-employee/<int:id>/', EmployeeDetailView.as_view(), name='manager_view_employee'),
     
     # Success Views
-    path('success/hr-created/<int:hr_id>', HRCreateSuccessView.as_view(), name='hr_creation_success'),
+    path('success/hr-created/', HRCreateSuccessView.as_view(), name='hr_creation_success'),
     path('success/employee-created/', EmployeeCreateSuccessView.as_view(), name='employee_creation_success'),
-    path('success/validated/<int:id>', ValidationSuccessView.as_view(), name='validation_success'),
+    path('success/validated/', ValidationSuccessView.as_view(), name='validation_success'),
     
     # Employee View
     path('employee/dashboard/', EmployeeDashboardView.as_view(), name='employee_dashboard'),

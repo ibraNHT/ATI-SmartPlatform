@@ -167,10 +167,15 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Date picker for start date
+    // Date picker for the birth date and the start date
     const startDateField = document.getElementById('id_start_date');
     if (startDateField) {
         startDateField.type = 'date';
+    }
+    // Date picker for the birth date and the start date
+    const birthDateField = document.getElementById('id_birth_date');
+    if (birthDateField) {
+        birthDateField.type = 'date';
     }
     
     // Password toggle

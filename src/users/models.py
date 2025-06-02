@@ -66,6 +66,7 @@ class User(AbstractUser):
     # Add the fields here
     # employee_id = models.CharField(max_length=255, unique=True)  # Employee ID, primary key, max 255 chars, must be unique
     professional_email = models.EmailField(unique=True, null=True, blank=True)  # Professional email, must be unique, can be null or blank
+    birth_date = models.DateField(null=True, blank=True)  # Birth date, can be null or blank
     start_date = models.DateField(null=True, blank=True)  # Start date, can be null or blank
     first_name = models.CharField(max_length=150, blank=False)  # Required
     personal_email = models.EmailField(blank=False)             # Required
@@ -75,7 +76,6 @@ class User(AbstractUser):
     gender = models.CharField(  # Gender, a choice field
         max_length=10, choices=[("female", "Female"), ("male", "Male")], null=True, blank=True
     )
-    birth_date = models.DateField(null=True, blank=True)  # Birth date, can be null or blank
     personal_picture = models.FileField(upload_to="profile_pics/", null=True, blank=True, default="static/images/logo.png")  # Personal picture, uploaded to 'profile_pics/' directory, can be null or blank
     is_activated = models.BooleanField(default=False)  # Flag to indicate if the profile is activated, default is False
     joined_files = models.FileField(upload_to="joined_files/", null=True, blank=True)  # Joined files, uploaded to 'joined_files/' directory, can be null or blank
@@ -90,7 +90,7 @@ class User(AbstractUser):
         verbose_name_plural = _('users')  # Set the plural verbose name for the model
         abstract = False
         
-    # Add these at the bottom of your model class
+
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name='groups',
@@ -107,5 +107,3 @@ class User(AbstractUser):
         related_name='custom_user_set',  # Changed from default 'user_set'
         related_query_name='user',
     )
-    
-    # ... rest of your model ...

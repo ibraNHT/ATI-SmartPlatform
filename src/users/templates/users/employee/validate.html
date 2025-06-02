@@ -30,7 +30,8 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3 text-center">
-                                    <img src="{{ employee.personal_picture.url|default:'/static/images/default-profile.png' }}" 
+                                    {% comment %} <img src="{{ employee.personal_picture.url|default:'/static/images/default-profile.png' }}"  {% endcomment %}
+                                    <img src={% static "images/logo.png" %}
                                         class="rounded-circle mb-3" 
                                         width="120" 
                                         height="120">
@@ -123,7 +124,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+{% comment %} <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Password generator
     document.getElementById('generatePassword').addEventListener('click', function() {
@@ -140,6 +141,39 @@ document.addEventListener('DOMContentLoaded', function() {
     if (passwordField) {
         passwordField.insertAdjacentHTML('afterend', 
             '<span class="input-group-text toggle-password" style="cursor:pointer;margin-top:4px;">' +
+            '<i class="fas fa-eye"></i></span>');
+        
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+});
+</script> {% endcomment %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date picker for the birth date and the start date
+    const startDateField = document.getElementById('id_start_date');
+    if (startDateField) {
+        startDateField.type = 'date';
+    }
+    // Date picker for the birth date and the start date
+    const birthDateField = document.getElementById('id_birth_date');
+    if (birthDateField) {
+        birthDateField.type = 'date';
+    }
+    
+    // Password toggle
+    const passwordField = document.getElementById('id_password');
+    if (passwordField) {
+        passwordField.insertAdjacentHTML('afterend', 
+            '<span class="input-group-text toggle-password" style="cursor:pointer;">' +
             '<i class="fas fa-eye"></i></span>');
         
         document.querySelector('.toggle-password').addEventListener('click', function() {

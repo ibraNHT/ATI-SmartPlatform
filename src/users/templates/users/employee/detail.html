@@ -30,7 +30,7 @@
                     <i class="fas fa-arrow-left me-1"></i> Back to Employee List
                 </a>
                 {% elif connected_user.role == 'MANAGER' %}
-                <a href="{% url 'users:manager_employees' %}" class="btn btn-sm btn-outline-light">
+                <a href="{% url 'users:hr_employees_list' %}" class="btn btn-sm btn-outline-light">
                     <i class="fas fa-arrow-left me-1"></i> Back to Department Employee List 
                 </a>
                 {% else %}
@@ -52,7 +52,8 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 text-center">
-                            <img src="{{ employee.personal_picture.url|default:'/static/images/default-profile.png' }}" 
+                            {% comment %} <img src="{{ employee.personal_picture.url|default:'/static/images/default-profile.png' }}"  {% endcomment %}
+                            <img src={% static "images/logo.png" %}
                                 class="rounded-circle mb-3" 
                                 width="120" 
                                 height="120" alt="{{ employee.get_full_name }}">
@@ -69,35 +70,41 @@
             </div>
 
             <!-- Validation Actions -->
-            {% if not employee.is_activated %}
+            {% if not employee.is_activated and connected_user.is_superuser %}
             <form method="post" action="{% url 'users:validate_employee' employee.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success mb-2">
                     Validate Employee
                 </button>
             </form>
-            {% else %}
             <!-- Delete the employee if he is already validated -->
             <form method="post" action="{% url 'users:delete_employee' employee.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger mb-2">
+                    <i class="fas fa-trash-alt"></i>
                     Delete Employee
                 </button>
             </form>
             {% endif %}
-            <!-- Additional Actions -->
-            <a href="{% url 'users:edit_employee' employee.id %}" class="btn btn-primary mb-2">
-                <i class="fas fa-edit me-1"></i> Edit Employee
-            </a>
-            <a href="#" class="btn btn-secondary mb-2">
-                <i class="fas fa-file-alt me-1"></i> View Documents
-            </a>
-            <a href="#" class="btn btn-info mb-2">
-                <i class="fas fa-calendar-check me-1"></i> Attendance Records
-            </a>
-            <a href="#" class="btn btn-warning mb-2">
-                <i class="fas fa-chart-line me-1"></i> Performance Metrics
-            </a>
+            <!-- Additional Actions only for the CEO and the HR Manager  -->
+            {% comment %} Check if the connected user is a superuser or HR Manager to show additional actions {% endcomment %}
+            {% if connected_user.is_superuser or connected_user.role == "HR_MANAGER" %}
+                {% if connected_user.role == "HR_MANAGER" and not employee.is_activated %}
+                    <a href="{% url 'users:edit_employee' employee.id %}" class="btn btn-primary mb-2">
+                        <i class="fas fa-edit me-1"></i> Edit Employee
+                    </a>
+                {% endif %}
+                <a href="#" class="btn btn-secondary mb-2">
+                    <i class="fas fa-file-alt me-1"></i> View Documents
+                </a>
+                <a href="#" class="btn btn-info mb-2">
+                    <i class="fas fa-calendar-check me-1"></i> Attendance Records
+                </a>
+                <a href="#" class="btn btn-warning mb-2">
+                    <i class="fas fa-chart-line me-1"></i> Performance Metrics
+                </a>
+                
+            {% endif %}
         </div>
     </div>
 </div>

@@ -156,9 +156,9 @@
                                     <td>{{ user.date_joined|date:"M d, Y" }}</td>
                                     <td>
                                         {% comment %} <a href="{% url 'users:validate_employee' user.employee_id %}"  {% endcomment %}
-                                        <a href="#"
+                                        <a href={% url "users:ceo_employees_list" %}
                                         class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-user-edit"></i> Review
+                                        <i class="fas fa-eye"></i> See more
                                         </a>
                                     </td>
                                 </tr>

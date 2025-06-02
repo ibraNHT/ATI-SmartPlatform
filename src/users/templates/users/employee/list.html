@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% comment %} Load media {% endcomment %}
 
 {% block title %}Employee List | {{ company_name }}{% endblock %}
 
@@ -24,22 +25,22 @@
                         </button>
                     </div>
                 </div>
-                {% comment %} A go back link to the previous page according to the user {% endcomment %}
-                {% if connected_user.role == 'HR MANAGER' %}
+                {% comment %} A go Go link to the previous page according to the user {% endcomment %}
+                {% if connected_user.role == 'HR_MANAGER' %}
                 <a href="{% url 'users:hr_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
                 </a>
-                {% elif connected_user.role == '' %}
+                {% elif not connected_user.role %}
                 <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
                 </a>
                 {% elif connected_user.role == 'MANAGER' %}
                 <a href="{% url 'users:manager_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
                 </a>
-                {% else %}
+                {% elif connected_user.role == 'EMPLOYEE'  %}
                 <a href="{% url 'users:employee_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
                 </a>
                 {% endif %}
 
@@ -52,7 +53,7 @@
                     <thead class="bg-light">
                         <tr>
                             <th>Photo</th>
-                            <th>Employee ID</th>
+                            {% comment %} <th>Employee ID</th> {% endcomment %}
                             <th>Name</th>
                             <th>Department</th>
                             <th>Role</th>
@@ -64,14 +65,13 @@
                         {% for employee in employees %}
                         <tr class="animate__animated animate__fadeIn">
                             <td>
-                                {% comment %} <img src="{{ employee.personal_picture.url|default:'/static/images/logo.png' }}"  {% endcomment %}
-                                <img src={% static "images/logo.png" %}
+                                <img src={% static "images/logo.png" %} 
                                     class="rounded-circle" 
                                     width="40" 
                                     height="40"
-                                    alt="{{ employee.get_full_name }}">
+                                    {% comment %} alt="{{ employee.get_full_name }}" {% endcomment %}>
                             </td>
-                            <td>{{ employee.employee_id }}</td>
+                            {% comment %} <td>{{ employee.id }}</td> {% endcomment %}
                             <td>{{ employee.get_full_name }}</td>
                             <td>{{ employee.department }}</td>
                             <td>{{ employee.get_role_display }}</td>
@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = document.querySelectorAll('tbody tr');
         
         rows.forEach(function(row) {
-            const name = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-            const department = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+            const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const department = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
             if (name.includes(filter) || department.includes(filter)) {
                 row.style.display = '';
             } else {
