@@ -7,7 +7,7 @@ Hybrid and Web App for ATI Information and operations Systems.
 ATI-SmartPlatform/ <!-- The repository name-->
 ├── .venv/ <!--  Containing my virtual environment data (Scripts, include, Lib) -->
 ├── src/ <!--A subdirectory to contain the entire project code -->
-│   ├── Ati_SmartPlatform/ <!-- The project name and main directory to manage the entire project features and tools-->
+│   ├── Ati_smart_platform/ <!-- The project name and main directory to manage the entire project features and tools-->
 │   │   ├── __pycache__/
 │   │   ├── __init__.py
 │   │   ├── urls.py
@@ -18,6 +18,10 @@ ATI-SmartPlatform/ <!-- The repository name-->
 │   │   ├── migrations/
 │   │   ├── __pycache__/
 │   │   ├── static/ <!-- There is where I tried to store some specific users app files-->
+│   │   │    ├── users/
+│   │   │    │   ├── css/
+│   │   │    │   ├── images/
+│   │   │    │   ├── js/
 │   │   ├── templates/ <!-- This folder seems to be the refered one in the settings as TEMPLATE_FILES (surely for this specific app)-->
 │   │   │    ├── users/
 │   │   │    │   ├── ceo/
@@ -37,12 +41,12 @@ ATI-SmartPlatform/ <!-- The repository name-->
 │   ├── media/
 │   │   ├── joined_files/ <!-- There is where the joined files are supposed to be stored -->
 │   │   ├── profile_pics/  <!-- There is where the registered profile pictures are supposed to be stored -->
-│   │   ├── static/images/ <!-- There is where other static files are supposed to be stored -->
 │   ├── db.sqlite3
 │   ├── migrations/__init__.py
 │   ├── templates/ base.html  <!-- The base template to build a common headder and import stuffs for the platform interfaces -->
-    ├── manage.py
+├── static/images/ <!-- There is where other static files are supposed to be stored like the logo, and other static suffs -->
 ├── README.md
+├── manage.py
 ├── requirements.txt
 ├── .gitignore
 ├── LICENCE

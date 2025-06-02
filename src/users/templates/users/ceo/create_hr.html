@@ -46,12 +46,16 @@
                                     <div class="col-md-6">
                                         {{ form.address|as_crispy_field }}
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
                                         {{ form.phone_number|as_crispy_field }}
                                     </div>
                                     <div class="col-md-6">
                                         {{ form.gender|as_crispy_field }}
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-6">
                                         {{ form.birth_date|as_crispy_field }}
                                     </div>
@@ -69,21 +73,21 @@
                                 </h5>
                             </div>
                             <div class="card-body">
-                                {% comment %} <div class="row">
+                                <div class="row">
                                     <div class="col-md-6">
                                         {{ form.department|as_crispy_field }}
                                     </div>
                                     <div class="col-md-6">
                                         {{ form.role|as_crispy_field }}
                                     </div>
-                                </div> {% endcomment %}
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         {{ form.professional_email|as_crispy_field }}
                                     </div>
-                                    {% comment %} <div class="col-md-6">
+                                    <div class="col-md-6">
                                         {{ form.job_title|as_crispy_field }}
-                                    </div> {% endcomment %}
+                                    </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
@@ -94,9 +98,9 @@
                                     </div>
                                 </div>    
                                 <div class="row">
-                                    {% comment %} <div class="col-md-6">
+                                    <div class="col-md-6">
                                         {{ form.role_description|as_crispy_field }}
-                                    </div> {% endcomment %}
+                                    </div>
                                 </div> 
                         </div>
 
@@ -196,6 +200,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Make the department and the role read only
+    
 });
+
+
 </script>
 {% endblock %}

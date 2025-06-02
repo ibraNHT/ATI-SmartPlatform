@@ -58,6 +58,7 @@
                             <th>Department</th>
                             <th>Role</th>
                             <th>Status</th>
+                            <th>Files</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -65,11 +66,19 @@
                         {% for employee in employees %}
                         <tr class="animate__animated animate__fadeIn">
                             <td>
-                                <img src={% static "images/logo.png" %} 
+                                {% if employee.personal_picture %}
+                                    <img src="{{ employee.personal_picture.url|default:"{% static 'images/logo.png'%}" }}" 
+                                        class="rounded-circle" 
+                                        width="40" 
+                                        height="40"
+                                        alt="{{ employee.first_name }} photo">
+                                {% else %}
+                                    <img src={% static "images/logo.png" %}
                                     class="rounded-circle" 
                                     width="40" 
                                     height="40"
-                                    {% comment %} alt="{{ employee.get_full_name }}" {% endcomment %}>
+                                    alt="{{ employee.first_name }} photo">
+                                {% endif %}
                             </td>
                             {% comment %} <td>{{ employee.id }}</td> {% endcomment %}
                             <td>{{ employee.get_full_name }}</td>
@@ -80,6 +89,16 @@
                                 <span class="badge bg-success">Active</span>
                                 {% else %}
                                 <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if employee.joined_files %}
+                                <a href="{{ employee.joined_files.url }}" class="btn btn-outline-primary"
+                                        data-bs-toggle="tooltip" title="Linked files">
+                                        <i class="fas fa-file"></i>
+                                </a>
+                                {% else %}
+                                <span>No linked file</span>
                                 {% endif %}
                             </td>
                             <td>
