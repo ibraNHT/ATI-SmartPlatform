@@ -449,14 +449,45 @@ VERSION = "0.0.1"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# Ati_SmartPlatform/settings.py
+
+# ... (your existing settings) ...
+
 if not DEBUG:
     # Security settings
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-
+    SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
+    SESSION_COOKIE_SECURE = True  # Only send session cookies over HTTPS
+    CSRF_COOKIE_SECURE = True  # Only send CSRF cookies over HTTPS
+    SECURE_BROWSER_XSS_FILTER = True  # Enable XSS filter
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME sniffing
+    X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
+    
+    # Host settings (PythonAnywhere specific)
+    ALLOWED_HOSTS = [
+        'ibrahimati.pythonanywhere.com',  # Your actual PythonAnywhere domain
+        'www.ibrahimati.pythonanywhere.com',  # Optional: www subdomain
+        # Add these if you have a custom domain:
+        # 'ati-smart-platform.com',
+        # 'www.ati-smart-platform.com'
+    ]
+    
     # Static files
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # For better static file handling
+    
+    # Additional recommended security headers
+    SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    
+    # Database persistence (SQLite specific)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'OPTIONS': {
+                'timeout': 20,  # Increase timeout for production
+            }
+        }
+    }
