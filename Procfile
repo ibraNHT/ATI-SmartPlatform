@@ -1,2 +1,2 @@
-web: gunicorn Ati_smart_platform.wsgi:Ati_smart_platform
+web: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src
 release: python manage.py migrate

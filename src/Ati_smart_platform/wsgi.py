@@ -8,9 +8,9 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
-
 from django.core.wsgi import get_wsgi_application
 
+# No need for sys.path modifications here since we're using --pythonpath
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Ati_smart_platform.settings')
 
 application = get_wsgi_application()

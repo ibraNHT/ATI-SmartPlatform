@@ -50,6 +50,8 @@ ATI-SmartPlatform/ <!-- The repository name-->
 ├── requirements.txt
 ├── .gitignore
 ├── LICENCE
+├── Procfile
+├── runtime.txt
 └── .github/
     └── workflows/
         └── django.yml
