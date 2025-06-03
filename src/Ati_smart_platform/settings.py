@@ -464,6 +464,10 @@ if not DEBUG:
     
     # Host settings (PythonAnywhere specific)
     ALLOWED_HOSTS = [
+        '.railway.app',  # Allows all Railway subdomains
+        'https://ati-smartplatform-test.up.railway.app/',  # Replace with your actual Railway URL
+        'localhost',
+        '127.0.0.1',
         'ibrahimati.pythonanywhere.com',  # Your actual PythonAnywhere domain
         'www.ibrahimati.pythonanywhere.com',  # Optional: www subdomain
         # Add these if you have a custom domain:
@@ -499,5 +503,11 @@ if 'DATABASE_URL' in os.environ:
         'default': dj_database_url.config(conn_max_age=600)
     }
     
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+if 'RAILWAY_ENVIRONMENT' in os.environ:  # Detect Railway deployment
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
