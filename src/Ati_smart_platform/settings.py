@@ -436,7 +436,7 @@ DEPARTMENT_JOBS = {
     "Data Science": ["Data Scientist", "Data Analyst"],
 }
 
-COMPANY_NAME = "ATI Smart Platform"
+COMPANY_NAME = "ATI Smart"
 COMPANY_EMAIL = "ibrahim.ati2024@gmail.com" # Consider moving to .env if this changes based on deployment
 
 

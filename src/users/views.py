@@ -542,10 +542,6 @@
 #     # raise_exception = True
 
 from datetime import datetime, timedelta
-# src/users/views.py
-import os
-import sys
-from datetime import timedelta
 from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
@@ -564,21 +560,9 @@ from django.utils.translation import gettext as _
 import secrets
 import string
 
-# Ensure the 'src' directory is in the Python path for module imports
-# This helps manage.py find 'Ati_smart_platform' and other modules
-project_root = os.path.dirname(os.path.abspath(__file__))
-# Navigate up from views.py -> users/ -> src/ -> ATI-SmartPlatform/
-repo_root = os.path.abspath(os.path.join(project_root, '..', '..', '..'))
-src_path = os.path.join(repo_root, 'src')
-
-if src_path not in sys.path:
-    sys.path.insert(0, src_path)
-
-# Import models and forms after path adjustment
-from Ati_smart_platform.settings import DEPARTMENTS # Import DEPARTMENTS from settings.py
-from .models import User # Assuming User model is defined in .models
+from .models import User, DEPARTMENTS # Import DEPARTMENTS from models.py
 from .forms import (
-    UserCreationForm, EmployeeEditForm, EmployeeDeleteForm,
+    UserCreationForm, EmployeeEditForm, EmployeeDeleteForm, # Corrected import for EmployeeEditForm
     HRManagerCreationForm, EmployeeValidationForm
 )
 
@@ -591,51 +575,74 @@ def generate_random_password(length=10):
     chars = string.ascii_letters + string.digits + "!@#$%"
     return ''.join(secrets.choice(chars) for _ in range(length))
 
-def send_credentials_email(user_instance, username, password):
+def send_credentials_email(user, username, password):
     """
     Send login credentials to user's personal email.
     Assumes settings.BASE_URL and settings.COMPANY_NAME are defined.
     """
     subject = 'Your ATI Smart Platform Credentials'
     message = f'''
-Hello {user_instance.first_name},
+Hello {user.first_name},
     
 Your account has been created/validated successfully.
     
 Username: {username}
 Password: {password}
     
-Please log in at: {getattr(settings, 'BASE_URL', 'http://localhost:8000')}/users/login/
+Please log in at: {settings.BASE_URL}/login
+
+Important: These credentials are unique to your account and should not be shared with anyone.
+
+Best Regards,
     
-© {getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')}
+© {getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')}{datetime.now().year} All Rights Reserved
 '''
     try:
         send_mail(
             subject,
             message,
-            getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@atisys.com'),
-            [user_instance.personal_email],
+            getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@atisys.com'), # Use getattr for default
+            [user.personal_email],
             fail_silently=False
         )
-        # messages.success(None, f"Credentials sent to {user_instance.personal_email}.") # Messages need request
+        messages.success(None, f"Credentials sent to {user.personal_email}.") # Use None for request for utility func
     except Exception as e:
-        # messages.error(None, f"Failed to send email to {user_instance.personal_email}: {e}") # Messages need request
-        print(f"Error sending email to {user_instance.personal_email}: {e}") # For debugging
+        messages.error(None, f"Failed to send email to {user.personal_email}: {e}") # Use None for request for utility func
+        print(f"Error sending email: {e}") # For debugging
 
 
-# --- Predicate Functions for Decorators ---
-# These functions define the test for user roles. They return True or False.
-def is_ceo_user(user):
-    return user.is_superuser
+# --- Decorators ---
+def ceo_required(view_func):
+    """Decorator to ensure only CEO (is_superuser) can access a view."""
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(lambda u: u.is_superuser, login_url=reverse_lazy('users:login')))
+    def _wrapped_view(request, *args, **kwargs):
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
-def is_hr_manager_user(user):
-    return user.is_authenticated and user.role == 'HR_MANAGER'
+def hr_required(view_func):
+    """Decorator to ensure only HR Manager can access a view."""
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(lambda u: u.role == 'HR_MANAGER', login_url=reverse_lazy('users:login')))
+    def _wrapped_view(request, *args, **kwargs):
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
-def is_manager_user(user):
-    return user.is_authenticated and user.role == 'MANAGER'
+def manager_required(view_func):
+    """Decorator to ensure only Department Manager can access a view."""
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(lambda u: u.role == 'MANAGER', login_url=reverse_lazy('users:login')))
+    def _wrapped_view(request, *args, **kwargs):
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
-def is_employee_user(user):
-    return user.is_authenticated and user.role == 'EMPLOYEE'
+def employee_required(view_func):
+    """Decorator to ensure only Employee can access a view."""
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(lambda u: u.role == 'EMPLOYEE', login_url=reverse_lazy('users:login')))
+    def _wrapped_view(request, *args, **kwargs):
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 
 # --- Authentication Views ---
@@ -651,7 +658,7 @@ class CustomLoginView(LoginView):
         If the form is valid, log the user in and redirect based on their role.
         """
         remember_me = self.request.POST.get('remember_me')
-        login(self.request, form.get_user(), backend='django.contrib.auth.backends.ModelBackend')
+        login(self.request, form.get_user(), backend='django.contrib.auth.backends.ModelBackend') # Specify backend for clarity
 
         if remember_me:
             self.request.session.set_expiry(1209600)  # 2 weeks
@@ -661,19 +668,19 @@ class CustomLoginView(LoginView):
         user = self.request.user
         if user.is_superuser:
             messages.success(self.request, f"Welcome CEO {user.first_name}!")
-            return redirect(reverse_lazy('users:ceo_dashboard'))
+            return redirect('users:ceo_dashboard')
         elif user.role == 'HR_MANAGER':
             messages.success(self.request, f"Welcome HR Manager {user.first_name}!")
-            return redirect(reverse_lazy('users:hr_dashboard'))
+            return redirect('users:hr_dashboard')
         elif user.role == 'MANAGER':
             messages.success(self.request, f"Welcome Manager {user.first_name}!")
-            return redirect(reverse_lazy('users:manager_dashboard'))
+            return redirect('users:manager_dashboard')
         elif user.role == 'EMPLOYEE':
             messages.success(self.request, f"Welcome Employee {user.first_name}!")
-            return redirect(reverse_lazy('users:employee_dashboard'))
+            return redirect('users:employee_dashboard')
         else:
             messages.warning(self.request, "Your role is not defined. Redirecting to generic dashboard.")
-            return redirect(reverse_lazy('users:about_me')) # Fallback for undefined roles
+            return redirect('users:about_me') # Fallback for undefined roles
 
     def form_invalid(self, form):
         """
@@ -695,34 +702,25 @@ class CustomLogoutView(LogoutView):
             messages.info(request, "You have been successfully logged out.")
         return super().dispatch(request, *args, **kwargs)
 
-
 # --- CEO Views ---
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_ceo_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class CEODashboardView(TemplateView):
     """CEO dashboard showing key metrics and pending validations."""
     template_name = 'users/ceo/dashboard.html'
     
+    @method_decorator(ceo_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Check if HR Manager exists for initial setup redirection
-        hr_manager_exists = User.objects.filter(role='HR_MANAGER', is_activated=True).exists()
-
         context.update({
-            'hr_manager_exists': hr_manager_exists,
-            'total_employees': User.objects.filter(is_superuser=False).count(),
-            'total_managers': User.objects.filter(role__in=['MANAGER', 'HR_MANAGER']).count(),
+            'total_employees': User.objects.filter(is_superuser=False, is_staff=False).count(),
+            'total_managers': User.objects.filter(role='MANAGER').count(),
             'total_hr_managers': User.objects.filter(role='HR_MANAGER').count(),
             'pending_validations': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']).count(),
-            'total_departments': len(DEPARTMENTS),
+            'total_departments': len(DEPARTMENTS), # Use DEPARTMENTS from models.py
             'pending_users': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']).order_by('-date_joined'),
             'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')
         })
         return context
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_ceo_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class HRManagerCreateView(CreateView):
     """
     View for CEO to create HR Manager accounts.
@@ -730,6 +728,10 @@ class HRManagerCreateView(CreateView):
     form_class = HRManagerCreationForm
     template_name = 'users/ceo/create_hr.html'
     success_url = reverse_lazy('users:hr_creation_success')
+    
+    @method_decorator(ceo_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -741,18 +743,13 @@ class HRManagerCreateView(CreateView):
         If the form is valid, save the HR Manager and send credentials.
         The form's save method handles role, department, activation, and password hashing.
         """
-        try:
-            user = form.save() # The form's save method sets password, role, is_activated, etc.
-            
-            # Send credentials only after successful save and activation
-            send_credentials_email(user, user.username, form.cleaned_data['password'])
-            
-            messages.success(self.request, f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
-            return super().form_valid(form)
-        except Exception as e:
-            messages.error(self.request, f"An unexpected error occurred: {e}. Please try again.")
-            print(f"Error in HRManagerCreateView form_valid: {e}")
-            return self.form_invalid(form) # Re-render form with errors
+        user = form.save() # The form's save method sets password, role, is_activated, etc.
+        
+        # Send credentials only after successful save and activation
+        send_credentials_email(user, user.username, form.cleaned_data['password']) # Password from form
+        
+        messages.success(self.request, f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -762,17 +759,18 @@ class HRManagerCreateView(CreateView):
         return render(self.request, self.template_name, {'form': form, 'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')})
 
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_ceo_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class EmployeeValidationView(View):
     """
     View for CEO to validate employees.
     Allows CEO to set username and password for a non-activated employee.
     """
     template_name = 'users/employee/validate.html'
-    form_class = EmployeeValidationForm
+    
+    @method_decorator(ceo_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-    def get(self, request, id): # Changed employee_id to id as per your model
+    def get(self, request, id):
         """
         Display the employee validation form.
         Initializes username based on employee's last name and start year.
@@ -786,7 +784,7 @@ class EmployeeValidationView(View):
             department_slug = employee.department.lower().replace(' ', '').replace('&', '') if employee.department else ''
             username_initial = f"{employee.last_name.lower()}.ati{year}@{department_slug}"
         
-        form = self.form_class(initial={
+        form = EmployeeValidationForm(initial={
             'username': username_initial
         })
         return render(request, self.template_name, {
@@ -795,20 +793,20 @@ class EmployeeValidationView(View):
             'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')
         })
         
-    def post(self, request, id): # Changed employee_id to id
+    def post(self, request, id):
         """
         Process the employee validation form.
         Activates the employee and sends credentials.
         """
         employee = get_object_or_404(User, id=id, is_activated=False)
-        form = self.form_class(request.POST)
+        form = EmployeeValidationForm(request.POST)
         
         if form.is_valid():
             new_username = form.cleaned_data['username']
             new_password = form.cleaned_data['password']
 
             # Check if chosen username is already taken by an activated user
-            if User.objects.filter(username=new_username, is_activated=True).exclude(id=employee.id).exists():
+            if User.objects.filter(username=new_username, is_activated=True).exclude(id=id).exists():
                 messages.error(request, "This username is already taken by another active user. Please choose a different one.")
                 return render(request, self.template_name, {
                     'employee': employee,
@@ -821,10 +819,10 @@ class EmployeeValidationView(View):
             employee.is_activated = True
             employee.save()
             
-            send_credentials_email(employee, new_username, new_password)
+            send_credentials_email(employee, new_username, new_password) # Send Email with plain password
             
             messages.success(request, f"Employee '{employee.get_full_name()}' validated successfully! Credentials sent to their personal email.")
-            return redirect(reverse_lazy('users:validation_success'))
+            return redirect(reverse_lazy('users:validation_success')) # Redirect to generic success page
         else:
             messages.error(request, "Error validating employee. Please correct the highlighted errors.")
             return render(request, self.template_name, {
@@ -833,15 +831,20 @@ class EmployeeValidationView(View):
                 'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')
             })
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_ceo_user, login_url=reverse_lazy('users:login')), name='dispatch')
+
+# Ensure it uses the confirmation template
 class EmployeeDeleteView(View):
     """
     View for CEO to delete an employee account.
     """
     template_name = 'users/ceo/delete_employee.html'
+    success_url = reverse_lazy('users:employee_delete_success')
     
-    def get(self, request, id): # Changed employee_id to id
+    @method_decorator(ceo_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request, id):
         """
         Display confirmation page for employee deletion.
         """
@@ -851,7 +854,7 @@ class EmployeeDeleteView(View):
             'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')
         })
     
-    def post(self, request, id): # Changed employee_id to id
+    def post(self, request, id):
         """
         Process employee deletion.
         """
@@ -859,23 +862,22 @@ class EmployeeDeleteView(View):
         try:
             employee.delete()
             messages.success(request, f"Employee '{employee.get_full_name()}' has been deleted successfully.")
-            return redirect(reverse_lazy('users:ceo_employees_list'))
+            return redirect('users:ceo_employees_list')
         except Exception as e:
             messages.error(request, f"Error deleting employee '{employee.get_full_name()}': {e}")
-            return redirect(reverse_lazy('users:ceo_employees_list'))
-
+            return redirect('users:ceo_employees_list') # Redirect back to list on error
 
 # --- HR Manager Views ---
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_hr_manager_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class HRDashboardView(TemplateView):
     """HR dashboard showing key HR metrics and recent employee registrations."""
     template_name = 'users/hr_manager/dashboard.html'
     
+    @method_decorator(hr_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        all_employees = User.objects.exclude(is_superuser=True) # Exclude only the CEO
+        # Get employees created by HR (excluding superusers)
+        all_employees = User.objects.filter(is_superuser=False)
 
         context.update({
             'total_employees': all_employees.count(),
@@ -891,15 +893,17 @@ class HRDashboardView(TemplateView):
         })
         return context
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_hr_manager_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class EmployeeCreateView(CreateView):
     """
     View for HR Manager to register new employees.
     """
     form_class = UserCreationForm
     template_name = 'users/hr_manager/create_employee.html'
-    success_url = reverse_lazy('users:employee_creation_success')
+    success_url = reverse_lazy('users:employee_creation_success') # Redirect to generic success page
+    
+    @method_decorator(hr_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -911,17 +915,12 @@ class EmployeeCreateView(CreateView):
         If the form is valid, save the employee (as non-activated) and notify.
         The form's save method handles password hashing and basic user creation.
         """
-        try:
-            employee = form.save(commit=False)
-            employee.is_activated = False  # Employee requires CEO validation
-            employee.save() # Save the user after setting is_activated
-            
-            messages.success(self.request, f"Employee '{employee.get_full_name()}' registered successfully! Waiting for CEO validation.")
-            return super().form_valid(form)
-        except Exception as e:
-            messages.error(self.request, f"An unexpected error occurred: {e}. Please try again.")
-            print(f"Error in EmployeeCreateView form_valid: {e}")
-            return self.form_invalid(form)
+        employee = form.save(commit=False)
+        employee.is_activated = False  # Employee requires CEO validation
+        employee.save() # Save the user after setting is_activated
+        
+        messages.success(self.request, f"Employee '{employee.get_full_name()}' registered successfully! Waiting for CEO validation.")
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -931,9 +930,8 @@ class EmployeeCreateView(CreateView):
         return render(self.request, self.template_name, {'form': form, 'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')})
 
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_hr_manager_user, login_url=reverse_lazy('users:login')), name='dispatch')
-class EmployeeUpdateView(UpdateView): # Changed from LoginRequiredMixin, UpdateView to just UpdateView as decorators handle login
+
+class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
     """
     View for HR Manager to edit an employee's personal details.
     """
@@ -941,12 +939,16 @@ class EmployeeUpdateView(UpdateView): # Changed from LoginRequiredMixin, UpdateV
     form_class = EmployeeEditForm # Using EmployeeEditForm for personal details
     template_name = 'users/hr_manager/edit_employee.html'
     context_object_name = 'employee'
-    success_url = reverse_lazy('users:hr_employees_list') # Redirect to HR's employee list
+    success_url = reverse_lazy('users:employee_edit_success') # Redirect to HR's employee list
+
+    @method_decorator(hr_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get_object(self, queryset=None):
         """Retrieve the employee based on id from URL kwargs."""
-        user_id = self.kwargs.get('id') # Changed employee_id to id
-        return get_object_or_404(User, id=user_id)
+        id = self.kwargs.get('id')
+        return get_object_or_404(User, id=id)
         
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -957,15 +959,9 @@ class EmployeeUpdateView(UpdateView): # Changed from LoginRequiredMixin, UpdateV
         """
         If the form is valid, save the changes and display a success message.
         """
-        try:
-            response = super().form_valid(form)
-            messages.success(self.request, _(f"{self.object.get_full_name()}'s profile was updated successfully!"))
-            return response
-        except Exception as e:
-            messages.error(self.request, f"An unexpected error occurred: {e}. Please try again.")
-            print(f"Error in EmployeeUpdateView form_valid: {e}")
-            return self.form_invalid(form)
-
+        response = super().form_valid(form)
+        messages.success(self.request, _(f"{self.object.get_full_name()}'s profile was updated successfully!"))
+        return response
 
     def form_invalid(self, form):
         """
@@ -976,12 +972,11 @@ class EmployeeUpdateView(UpdateView): # Changed from LoginRequiredMixin, UpdateV
 
 
 # --- Manager Views ---
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_manager_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class ManagerDashboardView(TemplateView):
     """Department Manager dashboard showing team metrics."""
     template_name = 'users/manager/dashboard.html'
     
+    @method_decorator(manager_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -992,17 +987,17 @@ class ManagerDashboardView(TemplateView):
         team_members = User.objects.filter(
             department=user.department, 
             is_activated=True, 
-            is_superuser=False, # Exclude CEO
+            is_superuser=False # Exclude CEO
         ).exclude(id=user.id).count() # Exclude self
         
         department_employees = User.objects.filter(
             department=user.department, 
             is_activated=True, 
-            is_superuser=False,
+            is_superuser=False # Exclude CEO
         ).exclude(id=user.id).order_by('last_name', 'first_name')
 
         context.update({
-            'team_members': team_members,
+            'team_members_count': team_members,
             'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform'),
             'department_name': department_name,
             'department_employees': department_employees
@@ -1010,12 +1005,11 @@ class ManagerDashboardView(TemplateView):
         return context
 
 # --- Employee Views ---
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_employee_user, login_url=reverse_lazy('users:login')), name='dispatch')
 class EmployeeDashboardView(TemplateView):
     """Individual Employee dashboard."""
     template_name = 'users/employee/dashboard.html'
 
+    @method_decorator(employee_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -1038,11 +1032,11 @@ class EmployeeDashboardView(TemplateView):
         })
         return context
 
-@method_decorator(login_required, name='dispatch')
 class AboutMeView(TemplateView):
     """View for any user to see their own account details."""
     template_name = 'users/auth/about_me.html'
     
+    @method_decorator(login_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -1052,7 +1046,6 @@ class AboutMeView(TemplateView):
         return context
 
 # --- Common Employee Listing/Detail View ---
-@method_decorator(login_required, name='dispatch')
 class EmployeeListView(ListView):
     """
     Common view for CEO, HR Manager, and Department Manager to list employees.
@@ -1063,6 +1056,7 @@ class EmployeeListView(ListView):
     context_object_name = 'employees'
     paginate_by = 10
     
+    @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         # Basic check to ensure only authorized roles can access this list
         user = self.request.user
@@ -1076,22 +1070,21 @@ class EmployeeListView(ListView):
         Returns the queryset of employees based on the logged-in user's role.
         """
         user = self.request.user
-        # Start with all non-superusers (excluding the CEO itself)
-        queryset = User.objects.order_by('date_joined').exclude(is_superuser=True)
+        queryset = User.objects.exclude(is_superuser=True).order_by('last_name', 'first_name') # Start with all non-superusers
 
         if user.is_superuser:
-            # CEO sees all activated employees (excluding CEO itself)
-            queryset = queryset # The CEO will see all the employees, activated or not
+            # CEO sees all activated employees
+            queryset = queryset.filter(is_activated=True)
             messages.info(self.request, "Displaying all activated employees.")
         elif user.role == 'HR_MANAGER':
-            # HR Manager sees all employees (activated and non-activated, excluding CEO)
-            queryset = queryset.filter(is_superuser=False) # All non-superusers
+            # HR Manager sees all employees (activated and non-activated)
             messages.info(self.request, "Displaying all registered employees (including those awaiting validation).")
         elif user.role == 'MANAGER':
-            # Department Manager sees employees in their department who are activated
-            queryset = queryset.filter(department=user.department, is_activated=True, is_superuser=False)
+            # Department Manager sees employees in their department
+            queryset = queryset.filter(department=user.department, is_activated=True)
             messages.info(self.request, f"Displaying employees in your department: {user.department}.")
         else:
+            # This case should ideally be caught by dispatch decorator, but as a fallback
             messages.error(self.request, "You do not have the required role to view this list.")
             queryset = User.objects.none() # Return an empty queryset
         
@@ -1108,12 +1101,12 @@ class EmployeeDetailView(View):
     Common view for CEO, HR Manager, and Department Manager to view a single employee's details.
     """
     template_name = 'users/employee/detail.html'
-
-    @method_decorator(login_required, name='dispatch')
-    def dispatch(self, request, *args, **kwargs):
-        user = request.user
-        employee_id_from_url = self.kwargs.get('id') # Changed employee_id to id
-        employee = get_object_or_404(User, id=employee_id_from_url)
+    
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        user = self.request.user
+        id = self.kwargs.get('id')
+        employee = get_object_or_404(User, id=id)
 
         # Ensure that only authorized roles can view employee details
         if user.is_superuser: # CEO can view anyone
@@ -1122,23 +1115,17 @@ class EmployeeDetailView(View):
             pass
         elif user.role == 'MANAGER': # Manager can only view employees in their department
             if employee.department != user.department:
-                messages.error(request, "You do not have permission to view details of employees outside your department.")
-                return redirect(reverse_lazy('users:manager_dashboard'))
+                messages.error(self.request, "You do not have permission to view details of employees outside your department.")
+                return redirect(reverse_lazy('users:manager_dashboard')) # Or appropriate redirect
         else: # Regular employee or undefined role cannot view other employee details
-            if user.id != employee_id_from_url: # Allow employee to view their own profile via about_me
-                messages.error(request, "You do not have permission to view other employee details.")
-                return redirect(reverse_lazy('users:employee_dashboard'))
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        employee_id = self.kwargs.get('id')
-        employee = get_object_or_404(User, id=employee_id)
-        context = {'employee': employee}
-        return render(request, self.template_name, context)
+            if user.id != id: # Allow employee to view their own profile via about_me
+                messages.error(self.request, "You do not have permission to view other employee details.")
+                return redirect(reverse_lazy('users:employee_dashboard')) # Or appropriate redirect
+        
+        return super().dispatch(self, *args, **kwargs)
 
 
-    def get(self, request, id): # Changed employee_id to id
+    def get(self, request, id):
         """
         Retrieves and displays a single employee's details.
         """
@@ -1151,12 +1138,12 @@ class EmployeeDetailView(View):
         return render(request, self.template_name, context)
 
 
-# --- Success Views (Generic and Specific) ---
+# --- Success Views ---
 class SuccessView(TemplateView):
     """Base success view with animations. To be inherited."""
     template_name = "users/success/generic.html"
     message = "Action completed successfully!"
-    animation_class = "animate__fadeInUp" # Requires animate.css or similar CSS library
+    animation_class = "animate__fadeInUp" # Requires django-animate.css or similar CSS library
     redirect_url = reverse_lazy('users:login') # Default redirect
 
     def get_context_data(self, **kwargs):
@@ -1171,36 +1158,64 @@ class SuccessView(TemplateView):
 
 class EmployeeCreateSuccessView(SuccessView):
     """Success view for employee registration by HR Manager."""
-    template_name = 'users/success/employee_created.html'
+    template_name = 'users/success/employee_created.html' # Specific template if desired
     message = "Employee registered successfully! Awaiting CEO validation."
     redirect_url = reverse_lazy('users:hr_dashboard') # Go back to HR dashboard
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Add buttons for HR: Register another or go to dashboard
         context['register_another_url'] = reverse_lazy('users:create_employee')
         context['go_to_dashboard_url'] = reverse_lazy('users:hr_dashboard')
         return context
 
 class HRCreateSuccessView(SuccessView):
     """Success view for HR Manager creation by CEO."""
-    template_name = 'users/success/hr_created.html'
+    template_name = 'users/success/hr_created.html' # Specific template if desired
     message = "HR Manager account created successfully!"
     redirect_url = reverse_lazy('users:ceo_dashboard') # Go back to CEO dashboard
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['hr_manager'] = User.objects.filter(role='HR_MANAGER').first()
+        # Add buttons for CEO: Create another HR or go to dashboard
+        context['create_another_hr_url'] = reverse_lazy('users:create_hr')
         context['go_to_dashboard_url'] = reverse_lazy('users:ceo_dashboard')
         return context
 
 class ValidationSuccessView(SuccessView):
     """Success view for employee validation by CEO."""
-    template_name = 'users/employee/validated.html'
+    template_name = 'users/employee/validated.html' # Reusing employee/validated.html
     message = "Employee account validated successfully!"
     redirect_url = reverse_lazy('users:ceo_dashboard') # Go back to CEO dashboard
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['go_to_validation_list_url'] = reverse_lazy('users:ceo_dashboard') # Assuming CEO dashboard shows pending validations
+        # Add buttons for CEO: Go back to validation list or go to dashboard
+        context['go_to_validation_list_url'] = reverse_lazy('users:ceo_dashboard') # Or a dedicated validation list URL if implemented
         context['go_to_dashboard_url'] = reverse_lazy('users:ceo_dashboard')
+        return context
+    
+class EmployeeDeleteSuccessView(TemplateView):
+    """Success page after employee deletion"""
+    template_name = 'users/success/employee_deleted.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform'),
+            'redirect_url': reverse_lazy('users:hr_dashboard')
+        })
+        return context
+    
+class EmployeeEditSuccessView(TemplateView):
+    """Success page after editing an employee"""
+    template_name = 'users/success/employee_edited.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform'),
+            'redirect_url': reverse_lazy('users:hr_dashboard'),
+            'view_employee_url': reverse_lazy('users:hr_employees_list')
+        })
         return context
