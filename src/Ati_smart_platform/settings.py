@@ -8,20 +8,15 @@
 
 # For the full list of settings and their values, see
 # https://docs.djangoproject.com/en/5.2/ref/settings/
-# """
-
 import os
 from pathlib import Path
 import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
 
 # Database configuration
-import os
-import dj_database_url
-
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///db.sqlite3',
@@ -29,7 +24,7 @@ DATABASES = {
     )
 }
 
-# Static files configuration
+# Static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -42,25 +37,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Security settings
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_REFERRER_POLICY = 'same-origin'
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
-
-# Security and Debug settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'  # Set to True for now to see errors
-ALLOWED_HOSTS = ['*']  # Allow all hosts for now
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ['*']
 
-# Email configuration (optional)
+# Email settings
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
@@ -69,20 +50,19 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
-# Static files configuration
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'src/static'),
+# Middleware
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Security settings
+# Security settings for production
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -127,96 +107,6 @@ if not DEBUG:
 #     "Technical Department": ["Technical Support", "Field Engineer"],
 #     "Operations Department": ["Operations Manager", "Logistics Coordinator"],
 #     "Data Science": ["Data Scientist", "Data Analyst"],
-# }
-
-# AUTH_USER_MODEL = 'users.User'  # Add this to manage the model
-
-# # Define the COMPANY_NAME variable
-# COMPANY_NAME = "ATI Smart Platform"
-# # Define the COMPANY_EMAIL variable
-# COMPANY_EMAIL = "ibrahim.ati2024@gmail.com"
-
-# # SECURITY WARNING: keep the secret key used in production secret!
-# # SECURITY WARNING: don't run with debug turned on in production!
-# BASE_URL = "https://gmail.com"  # For email links
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# DEFAULT_FROM_EMAIL = 'ibrahim.ati2024@gmail.com.com'
-
-
-# # Quick-start development settings - unsuitable for production
-# # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx'
-
-# # load data from a .env file if it exists
-# try:
-#     from dotenv import load_dotenv
-#     load_dotenv(BASE_DIR / '.env')  # Load environment variables from .env file
-# except ImportError:
-#     print("Warning: dotenv module not found. Environment variables will not be loaded.")
-# # If you have a .env file, you can set the SECRET_KEY there
-# # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-
-# ALLOWED_HOSTS = []
-
-# SITE_ID = 1  # Usually the first site has ID=1
-
-# # Application definition
-
-# INSTALLED_APPS = [
-#     'django.contrib.admin',
-#     'django.contrib.auth',
-#     'django.contrib.contenttypes',
-#     'django.contrib.sessions',
-#     'django.contrib.messages',
-#     # include media files
-#     'django.contrib.staticfiles',
-#     'django.contrib.sites',
-#     'django.contrib.flatpages',
-#     'django.contrib.humanize', # For human-readable dates, numbers, etc.
-#     'django.contrib.sitemaps',  # For sitemap support
-#     'users',
-#     'bootstrap5',
-#     'crispy_forms',
-#     'crispy_bootstrap5',
-# ]
-
-# MIDDLEWARE = [
-#     'django.middleware.security.SecurityMiddleware',
-#     'django.contrib.sessions.middleware.SessionMiddleware',
-#     'django.middleware.common.CommonMiddleware',
-#     'django.middleware.csrf.CsrfViewMiddleware',
-#     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#     'django.contrib.messages.middleware.MessageMiddleware',
-#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-# ]
-
-# ROOT_URLCONF = 'Ati_smart_platform.urls'
-
-# TEMPLATES = [
-#     {
-#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#         'DIRS': [BASE_DIR / 'templates'],
-#         # 'DIRS': [os.path.join(BASE_DIR, 'templates')],
-#         'APP_DIRS': True,
-#         'OPTIONS': {
-#             'context_processors': [
-#                 'django.template.context_processors.request',
-#                 'django.contrib.auth.context_processors.auth',
-#                 'django.contrib.messages.context_processors.messages',
-#             ],
-#         },
-#     },
-# ]
-
-# WSGI_APPLICATION = 'Ati_smart_platform.wsgi.application'
-
-
-# # Database
-# # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -560,16 +450,15 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = REPO_ROOT / 'media' # Directory to store uploaded files
 
 
-# --- 4. Email Configuration ---
-# Email Configuration (if using Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Email settings
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your_email@example.com') # Fallback for development
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your_app_password') # Fallback for development
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000') # For email links, use a proper production URL
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
 
 
 # --- 5. Custom & Third-Party App Settings ---
