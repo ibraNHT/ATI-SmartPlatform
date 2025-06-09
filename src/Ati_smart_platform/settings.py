@@ -19,33 +19,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
 
 # Database configuration
-try:
-    # Try to use Railway's DATABASE_URL first
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DB', 'postgres'),
-            'USER': os.getenv('POSTGRES_USER', 'postgres'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'postgres'),
-            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-            'PORT': os.getenv('POSTGRES_PORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require'
-            }
-        }
-    }
-except Exception as e:
-    print(f"Error configuring database: {str(e)}")
-    # Fallback to SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-            'OPTIONS': {
-                'timeout': 20,
-            }
-        }
-    }
+import os
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
+}
+
+# Static files configuration
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'src/static'),
+]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Security settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
 
 # Security and Debug settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
@@ -636,17 +644,7 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
     
     # Host settings (PythonAnywhere specific)
-    ALLOWED_HOSTS = [
-        '.railway.app',  # Allows all Railway subdomains
-        'https://ati-smartplatform-test.up.railway.app/',  # Replace with your actual Railway URL
-        'localhost',
-        '127.0.0.1',
-        'ibrahimati.pythonanywhere.com',  # Your actual PythonAnywhere domain
-        'www.ibrahimati.pythonanywhere.com',  # Optional: www subdomain
-        # Add these if you have a custom domain:
-        # 'ati-smart-platform.com',
-        # 'www.ati-smart-platform.com'
-    ]
+    ALLOWED_HOSTS =['*']
     
     # Static files
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
