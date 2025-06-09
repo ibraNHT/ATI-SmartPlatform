@@ -10,15 +10,19 @@
 # https://docs.djangoproject.com/en/5.2/ref/settings/
 # """
 
-# from pathlib import Path
+import os
+import dj_database_url
+from pathlib import Path
 
-# # Build paths inside the project like this: BASE_DIR / 'subdir'.
-# BASE_DIR = Path(__file__).resolve().parent.parent
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
 
-# # Personal data definition
-# # settings.py
-# ROLES = (
-#     ("CEO", "Chief Executive Officer"),
+# Load environment variables from Railway
+DATABASE_URL = os.getenv('DATABASE_URL')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 #     ("HR_MANAGER", "HR Manager"),
 #     ("MANAGER", "Department Manager"),
 #     ("EMPLOYEE", "Employee"),
