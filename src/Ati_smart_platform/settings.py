@@ -16,13 +16,31 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
 
+# Environment detection
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development').lower()
+IS_PRODUCTION = ENVIRONMENT == 'production'
+IS_DEVELOPMENT = ENVIRONMENT == 'development'
+
+# Core settings
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
+DEBUG = IS_DEVELOPMENT  # Always False in production
+ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if IS_DEVELOPMENT else ['*']
+
 # Database configuration
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+if IS_PRODUCTION:
+    # Production database configuration
+    DATABASES['default'] = dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 # Static files
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -30,16 +48,11 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'src/static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' if IS_PRODUCTION else 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Security settings
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['*']
 
 # Email settings
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
@@ -62,8 +75,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Security settings for production
-if not DEBUG:
+# Security settings
+if IS_PRODUCTION:
+    # Production-only security settings
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -75,6 +89,30 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
+
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'users.apps.UsersConfig',
+]
+
+# Debug toolbar settings (only in development)
+if IS_DEVELOPMENT:
+    INSTALLED_APPS += [
+        'debug_toolbar',
+    ]
+    MIDDLEWARE += [
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ]
+    INTERNAL_IPS = ['127.0.0.1', 'localhost']
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+    }
 #     ("HR_MANAGER", "HR Manager"),
 #     ("MANAGER", "Department Manager"),
 #     ("EMPLOYEE", "Employee"),
