@@ -25,4 +25,5 @@ urlpatterns = [
     path('', include('users.urls', namespace='users')),
     path('run-migrations/', deployment_views.migrate),
     path('create-superuser/', deployment_views.createsu),
+    path('check-db/', deployment_views.check_db),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
