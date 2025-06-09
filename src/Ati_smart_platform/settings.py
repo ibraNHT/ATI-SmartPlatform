@@ -19,12 +19,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
 
 # Database configuration
-if 'DATABASE_URL' in os.environ:
+try:
+    # Try to use Railway's DATABASE_URL first
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+            'USER': os.getenv('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'postgres'),
+            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+            'PORT': os.getenv('POSTGRES_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require'
+            }
+        }
     }
-else:
-    # Local SQLite database
+except Exception as e:
+    print(f"Error configuring database: {str(e)}")
+    # Fallback to SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
