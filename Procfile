@@ -1,2 +1,2 @@
-web: python -m gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src
-release: python manage.py migrate
+web: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src --log-file -
+release: python manage.py migrate && python manage.py collectstatic --noinput
