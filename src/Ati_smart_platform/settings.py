@@ -19,10 +19,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = BASE_DIR.parent
 
 # Load environment variables from Railway
-DATABASE_URL = os.getenv('DATABASE_URL')
+import dj_database_url
+
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///' + str(BASE_DIR / 'db.sqlite3'))
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL)
+}
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-w17p)ujn_a8f4z=&s#9v%_o$6yt%=l*-fk4^ka&kr9-_(sg0gx')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+
+# Add fallback for local development
+if not DATABASES['default']['ENGINE']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 #     ("HR_MANAGER", "HR Manager"),
 #     ("MANAGER", "Department Manager"),
 #     ("EMPLOYEE", "Employee"),
