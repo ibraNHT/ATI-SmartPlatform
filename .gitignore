@@ -129,7 +129,9 @@ celerybeat.pid
 .env
 .venv
 env/
+venv-prod/
 venv/
+venv-railway/
 ENV/
 env.bak/
 venv.bak/
