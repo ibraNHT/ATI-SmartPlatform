@@ -71,11 +71,20 @@ Best Regards,
 # --- Decorators ---
 def ceo_required(view_func):
     """Decorator to ensure only CEO (is_superuser) can access a view."""
-    @method_decorator(login_required)
-    @method_decorator(user_passes_test(lambda u: u.is_superuser, login_url=reverse_lazy('users:login')))
-    def _wrapped_view(request, *args, **kwargs):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return redirect('users:login')
         return view_func(request, *args, **kwargs)
-    return _wrapped_view
+    return wrapper
+
+# Create a method decorator version for class-based views
+def ceo_required_method(view_method):
+    """Decorator to ensure only CEO (is_superuser) can access a method."""
+    def wrapper(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return redirect('users:login')
+        return view_method(self, request, *args, **kwargs)
+    return wrapper
 
 def hr_required(view_func):
     """Decorator to ensure only HR Manager can access a view."""
@@ -160,14 +169,13 @@ class CustomLogoutView(LogoutView):
         return super().dispatch(request, *args, **kwargs)
 
 # --- CEO Views ---
-class CEODashboardView(TemplateView):
+class CEODashboardView(LoginRequiredMixin, TemplateView):
     """CEO dashboard showing key metrics and pending validations."""
     template_name = 'users/ceo/dashboard.html'
-    
-    @method_decorator(login_required)
-    @method_decorator(ceo_required)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+
+    @method_decorator(ceo_required_method)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

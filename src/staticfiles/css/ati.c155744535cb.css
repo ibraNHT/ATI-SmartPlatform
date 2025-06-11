@@ -1,0 +1,6 @@
+:root {
+  --primary-blue: #3498db;    /* Links, headers */
+  --secondary-green: #2ecc71; /* Buttons, success */
+  --dark-accent: #2c3e50;     /* Text, borders */
+  --light-bg: #f8f9fa;        /* Backgrounds */
+}
