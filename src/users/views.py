@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.urls import reverse, reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.views import LoginView, LogoutView
+from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib import messages
@@ -67,10 +68,10 @@ Best Regards,
         messages.error(None, f"Failed to send email to {user.personal_email}: {e}") # Use None for request for utility func
         print(f"Error sending email: {e}") # For debugging
 
-
+''' Users reqquirements methods
 # --- Decorators ---
 def ceo_required(view_func):
-    """Decorator to ensure only CEO (is_superuser) can access a view."""
+    """ Decorator to ensure only CEO (is_superuser) can access a view """
     def wrapper(request, *args, **kwargs):
         if not request.user.is_superuser:
             return redirect('users:login')
@@ -79,7 +80,7 @@ def ceo_required(view_func):
 
 # Create a method decorator version for class-based views
 def ceo_required_method(view_method):
-    """Decorator to ensure only CEO (is_superuser) can access a method."""
+    # Decorator to ensure only CEO (is_superuser) can access a method.
     def wrapper(self, request, *args, **kwargs):
         if not request.user.is_superuser:
             return redirect('users:login')
@@ -87,7 +88,7 @@ def ceo_required_method(view_method):
     return wrapper
 
 def hr_required(view_func):
-    """Decorator to ensure only HR Manager can access a view."""
+    # Decorator to ensure only HR Manager can access a view.
     @method_decorator(login_required)
     @method_decorator(user_passes_test(lambda u: u.role == 'HR_MANAGER', login_url=reverse_lazy('users:login')))
     def _wrapped_view(request, *args, **kwargs):
@@ -95,7 +96,7 @@ def hr_required(view_func):
     return _wrapped_view
 
 def manager_required(view_func):
-    """Decorator to ensure only Department Manager can access a view."""
+    # Decorator to ensure only Department Manager can access a view.
     @method_decorator(login_required)
     @method_decorator(user_passes_test(lambda u: u.role == 'MANAGER', login_url=reverse_lazy('users:login')))
     def _wrapped_view(request, *args, **kwargs):
@@ -103,12 +104,14 @@ def manager_required(view_func):
     return _wrapped_view
 
 def employee_required(view_func):
-    """Decorator to ensure only Employee can access a view."""
+    # Decorator to ensure only Employee can access a view.
     @method_decorator(login_required)
     @method_decorator(user_passes_test(lambda u: u.role == 'EMPLOYEE', login_url=reverse_lazy('users:login')))
     def _wrapped_view(request, *args, **kwargs):
         return view_func(request, *args, **kwargs)
-    return _wrapped_view
+    return _wrapped_view 
+    
+'''
 
 
 # --- Authentication Views ---
@@ -173,7 +176,7 @@ class CEODashboardView(LoginRequiredMixin, TemplateView):
     """CEO dashboard showing key metrics and pending validations."""
     template_name = 'users/ceo/dashboard.html'
 
-    @method_decorator(ceo_required_method)
+    # @method_decorator(ceo_required_method)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
     
@@ -198,7 +201,7 @@ class HRManagerCreateView(CreateView):
     template_name = 'users/ceo/create_hr.html'
     success_url = reverse_lazy('users:hr_creation_success')
     
-    @method_decorator(ceo_required)
+    # @method_decorator(ceo_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
     
@@ -235,7 +238,7 @@ class EmployeeValidationView(View):
     """
     template_name = 'users/employee/validate.html'
     
-    @method_decorator(ceo_required)
+    # @method_decorator(ceo_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -309,7 +312,7 @@ class EmployeeDeleteView(View):
     template_name = 'users/ceo/delete_employee.html'
     success_url = reverse_lazy('users:employee_delete_success')
     
-    @method_decorator(ceo_required)
+    # @method_decorator(ceo_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -341,7 +344,7 @@ class HRDashboardView(TemplateView):
     """HR dashboard showing key HR metrics and recent employee registrations."""
     template_name = 'users/hr_manager/dashboard.html'
     
-    @method_decorator(hr_required)
+    # @method_decorator(hr_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -370,7 +373,7 @@ class EmployeeCreateView(CreateView):
     template_name = 'users/hr_manager/create_employee.html'
     success_url = reverse_lazy('users:employee_creation_success') # Redirect to generic success page
     
-    @method_decorator(hr_required)
+    # @method_decorator(hr_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
     
@@ -410,7 +413,7 @@ class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'employee'
     success_url = reverse_lazy('users:employee_edit_success') # Redirect to HR's employee list
 
-    @method_decorator(hr_required)
+    # @method_decorator(hr_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -445,7 +448,7 @@ class ManagerDashboardView(TemplateView):
     """Department Manager dashboard showing team metrics."""
     template_name = 'users/manager/dashboard.html'
     
-    @method_decorator(manager_required)
+    # @method_decorator(manager_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -478,7 +481,7 @@ class EmployeeDashboardView(TemplateView):
     """Individual Employee dashboard."""
     template_name = 'users/employee/dashboard.html'
 
-    @method_decorator(employee_required)
+    # @method_decorator(employee_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -505,7 +508,7 @@ class AboutMeView(TemplateView):
     """View for any user to see their own account details."""
     template_name = 'users/auth/about_me.html'
     
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
@@ -525,7 +528,7 @@ class EmployeeListView(ListView):
     context_object_name = 'employees'
     paginate_by = 10
     
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         # Basic check to ensure only authorized roles can access this list
         user = self.request.user
@@ -571,7 +574,7 @@ class EmployeeDetailView(View):
     """
     template_name = 'users/employee/detail.html'
     
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         user = self.request.user
         id = self.kwargs.get('id')
