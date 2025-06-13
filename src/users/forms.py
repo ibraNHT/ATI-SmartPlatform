@@ -204,10 +204,10 @@ class HRManagerCreationForm(forms.ModelForm):
         self.fields['role'].initial = "HR_MANAGER"
         self.fields['role'].widget.attrs['readonly'] = True
         self.fields['department'].widget.attrs['readonly'] = True
-        self.fields['role'].disabled = True
-        self.fields['role_description'].disabled = True
+        #self.fields['role'].disabled = True
+        # self.fields['role_description'].disabled = True
         self.fields['role_description'].initial = "We are creating the HR Manager user account with the ability to create other users"  # Set role description to HR Manager
-        self.fields['department'].disabled = True
+        # self.fields['department'].disabled = True
         self.fields['personal_picture'].required = False  # Make personal picture optional
         # self.fields['personal_picture'].initial = "static/images/logo.png"  # Set initial value for personal picture
         self.helper = FormHelper()  # Initialize Crispy Form Helper
