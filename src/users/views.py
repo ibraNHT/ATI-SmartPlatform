@@ -36,7 +36,7 @@ def generate_random_password(length=10):
 def send_credentials_email(user, username, password):
     """
     Send login credentials to user's personal email.
-    Assumes settings.BASE_URL and settings.COMPANY_NAME are defined.
+    Returns True if email was sent successfully, False otherwise.
     """
     subject = 'Your ATI Smart Platform Credentials'
     message = f'''
@@ -49,24 +49,21 @@ Password: {password}
     
 Please log in at: {settings.BASE_URL}/login
 
-Important: These credentials are unique to your account and should not be shared with anyone.
-
-Best Regards,
-    
-© {getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform')}{datetime.now().year} All Rights Reserved
+Best regards,
+{settings.COMPANY_NAME}
 '''
     try:
         send_mail(
             subject,
             message,
-            getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@atisys.com'), # Use getattr for default
+            settings.DEFAULT_FROM_EMAIL,
             [user.personal_email],
             fail_silently=False
         )
-        messages.success(None, f"Credentials sent to {user.personal_email}.") # Use None for request for utility func
+        return True
     except Exception as e:
-        messages.error(None, f"Failed to send email to {user.personal_email}: {e}") # Use None for request for utility func
-        print(f"Error sending email: {e}") # For debugging
+        print(f"Error sending email: {e}")  # For debugging
+        return False
 
 ''' Users reqquirements methods
 # --- Decorators ---
@@ -218,9 +215,15 @@ class HRManagerCreateView(CreateView):
         user = form.save() # The form's save method sets password, role, is_activated, etc.
         
         # Send credentials only after successful save and activation
-        send_credentials_email(user, user.username, form.cleaned_data['password']) # Password from form
-        
-        messages.success(self.request, f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
+        email_sent = send_credentials_email(user, user.username, form.cleaned_data['password'])  # Password from form
+
+        if email_sent:
+            messages.success(self.request,
+                             f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
+        else:
+            messages.warning(self.request,
+                             f"HR Manager '{user.get_full_name()}' created, but failed to send credentials email to {user.personal_email}.")
+
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -288,13 +291,19 @@ class EmployeeValidationView(View):
 
             employee.username = new_username
             employee.set_password(new_password) # Hash the password
-            employee.is_activated = True
             employee.save()
             
-            send_credentials_email(employee, new_username, new_password) # Send Email with plain password
-            
-            messages.success(request, f"Employee '{employee.get_full_name()}' validated successfully! Credentials sent to their personal email.")
-            return redirect(reverse_lazy('users:validation_success')) # Redirect to generic success page
+            # Send credentials after successful validation
+            email_sent = send_credentials_email(employee, new_username, new_password)  # Send Email with plain password
+
+            if email_sent:
+                messages.success(request,
+                                 f"Employee '{employee.get_full_name()}' validated successfully! Credentials sent to their personal email.")
+            else:
+                messages.warning(request,
+                                 f"Employee '{employee.get_full_name()}' validated, but failed to send credentials email to {employee.personal_email}.")
+
+            return redirect(reverse_lazy('users:validation_success'))  # Redirect to generic success page
         else:
             messages.error(request, "Error validating employee. Please correct the highlighted errors.")
             return render(request, self.template_name, {
