@@ -219,10 +219,10 @@ class HRManagerCreateView(CreateView):
 
         if email_sent:
             messages.success(self.request,
-                             f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
+                            f"HR Manager '{user.get_full_name()}' created successfully! Credentials sent to their personal email.")
         else:
             messages.warning(self.request,
-                             f"HR Manager '{user.get_full_name()}' created, but failed to send credentials email to {user.personal_email}.")
+                            f"HR Manager '{user.get_full_name()}' created, but failed to send credentials email to {user.personal_email}.")
 
         return super().form_valid(form)
 
@@ -298,10 +298,10 @@ class EmployeeValidationView(View):
 
             if email_sent:
                 messages.success(request,
-                                 f"Employee '{employee.get_full_name()}' validated successfully! Credentials sent to their personal email.")
+                                f"Employee '{employee.get_full_name()}' validated successfully! Credentials sent to their personal email.")
             else:
                 messages.warning(request,
-                                 f"Employee '{employee.get_full_name()}' validated, but failed to send credentials email to {employee.personal_email}.")
+                                f"Employee '{employee.get_full_name()}' validated, but failed to send credentials email to {employee.personal_email}.")
 
             return redirect(reverse_lazy('users:validation_success'))  # Redirect to generic success page
         else:
@@ -584,26 +584,27 @@ class EmployeeDetailView(View):
     template_name = 'users/employee/detail.html'
     
     # @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        user = self.request.user
-        id = self.kwargs.get('id')
-        employee = get_object_or_404(User, id=id)
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        employee_id = self.kwargs.get('id')
+        employee = get_object_or_404(User, id=employee_id)
 
         # Ensure that only authorized roles can view employee details
-        if user.is_superuser: # CEO can view anyone
+        if user.is_superuser:  # CEO can view anyone
             pass
-        elif user.role == 'HR_MANAGER': # HR can view anyone
+        elif user.role == 'HR_MANAGER':  # HR can view anyone
             pass
-        elif user.role == 'MANAGER': # Manager can only view employees in their department
+        elif user.role == 'MANAGER':  # Manager can only view employees in their department
             if employee.department != user.department:
-                messages.error(self.request, "You do not have permission to view details of employees outside your department.")
-                return redirect(reverse_lazy('users:manager_dashboard')) # Or appropriate redirect
-        else: # Regular employee or undefined role cannot view other employee details
-            if user.id != id: # Allow employee to view their own profile via about_me
-                messages.error(self.request, "You do not have permission to view other employee details.")
-                return redirect(reverse_lazy('users:employee_dashboard')) # Or appropriate redirect
-        
-        return super().dispatch(self, *args, **kwargs)
+                messages.error(request, "You do not have permission to view details of employees outside your department.")
+                return redirect(reverse_lazy('users:manager_dashboard'))  # Or appropriate redirect
+        else:  # Regular employee or undefined role cannot view other employee details
+            # Allow employee to view their own profile via about_me
+            if user.id != employee.id:
+                messages.error(request, "You do not have permission to view other employee details.")
+                return redirect(reverse_lazy('users:employee_dashboard'))  # Or appropriate redirect
+
+        return super().dispatch(request, *args, **kwargs)
 
 
     def get(self, request, id):
