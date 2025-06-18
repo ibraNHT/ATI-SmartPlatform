@@ -7,7 +7,6 @@ import os
 def migrate(request):
     try:
         # Run migrations
-        call_command('makemigrations')
         call_command('migrate')
         # Collect static files
         call_command('collectstatic', '--noinput', '--clear')
