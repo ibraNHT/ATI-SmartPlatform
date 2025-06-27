@@ -20,7 +20,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from Ati_smart_platform import views as deployment_views
 
-urlpatterns = [
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ]
+
+urlpatterns += [
     path('admin/', admin.site.urls),
     path('', include('users.urls', namespace='users')),
     path('run-migrations/', deployment_views.migrate),
