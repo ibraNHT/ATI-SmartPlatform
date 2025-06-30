@@ -79,7 +79,7 @@
             </form>
             <!-- Delete the employee if he is already validated -->
             {% elif employee.is_activated and connected_user.is_superuser %}
-            <form method="post" action="{% url 'users:delete_employee' employee.id %}">
+            <form method="post" action="{% url 'users:ceo_delete_employee' employee.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger mb-2">
                     <i class="fas fa-trash-alt"></i>

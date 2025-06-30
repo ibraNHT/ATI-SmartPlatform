@@ -28,19 +28,23 @@
                 {% comment %} A go Go link to the previous page according to the user {% endcomment %}
                 {% if connected_user.role == 'HR_MANAGER' %}
                 <a href="{% url 'users:hr_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                 </a>
-                {% elif not connected_user.role %}
+                {% comment %} {% elif not connected_user.role %}
                 <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a> {% endcomment %}
+                {% elif connected_user.is_superuser %}
+                <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                 </a>
                 {% elif connected_user.role == 'MANAGER' %}
                 <a href="{% url 'users:manager_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                 </a>
                 {% elif connected_user.role == 'EMPLOYEE'  %}
                 <a href="{% url 'users:employee_dashboard' %}" class="btn btn-sm btn-outline-light">
-                    <i class="fas fa-arrow-left me-1"></i> Go to Dashboard
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
                 </a>
                 {% endif %}
 

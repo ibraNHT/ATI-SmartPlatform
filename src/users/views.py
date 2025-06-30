@@ -662,6 +662,8 @@ class HRCreateSuccessView(SuccessView):
         # Add buttons for CEO: Create another HR or go to dashboard
         context['create_another_hr_url'] = reverse_lazy('users:create_hr')
         context['go_to_dashboard_url'] = reverse_lazy('users:ceo_dashboard')
+        context['created_hr_name'] = User.objects.filter(role='HR_MANAGER').first().first_name  # Get the name from the form data
+        context['created_hr_email'] = User.objects.filter(role='HR_MANAGER').first().personal_email  # Get the email from the form data
         return context
 
 class ValidationSuccessView(SuccessView):
