@@ -117,7 +117,9 @@ class EmployeeEditForm(forms.ModelForm):
         fields = [
             "first_name", "last_name", "personal_email",
             "address", "phone_number", "gender",
-            "birth_date", "personal_picture"
+            "birth_date", "personal_picture", "role_description",
+            "department", "role", "job_title", "professional_email",
+            "start_date", "joined_files"
         ]
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date'}),

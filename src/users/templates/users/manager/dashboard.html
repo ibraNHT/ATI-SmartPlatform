@@ -27,7 +27,7 @@
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <h6 class="text-uppercase text-muted mb-2">Team Members</h6>
-                            <h2 class="mb-0">{{ team_members }}</h2>
+                            <h2 class="mb-0">{{ team_members_count }}</h2>
                         </div>
                         <div class="icon-circle bg-primary-light">
                             <i class="fas fa-users text-primary"></i>
@@ -131,7 +131,7 @@
                             <div class="d-flex align-items-center">
                                 <img src={% static "images/logo.png" %}
                                     class="rounded-circle me-3" width="40" height="40"
-                                    alt="{{ employee.get_full_name }}">
+                                    alt="{{ employee.name }}">
                                 <div>
                                     <h6 class="mb-0">{{ employee.get_full_name }}</h6>
                                     <small class="text-muted">{{ employee.job_title }}</small>

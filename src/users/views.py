@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 import secrets
 import string
 
+
 from .models import User, DEPARTMENTS # Import DEPARTMENTS from models.py
 from .forms import (
     UserCreationForm, EmployeeEditForm, EmployeeDeleteForm, # Corrected import for EmployeeEditForm
@@ -180,7 +181,7 @@ class CEODashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'total_employees': User.objects.exclude(is_superuser=True).count(),
+            'total_employees': User.objects.exclude(is_activated=False).count(),
             'total_managers': User.objects.filter(role__in=['MANAGER', 'HR_MANAGER']).count(),
             'total_hr_managers': User.objects.filter(role='HR_MANAGER').count(),
             'pending_validations': User.objects.filter(is_activated=False, role__in=['EMPLOYEE', 'MANAGER']).count(),
@@ -291,6 +292,7 @@ class EmployeeValidationView(View):
 
             employee.username = new_username
             employee.set_password(new_password) # Hash the password
+            employee.is_activated = True  # Activate the employee
             employee.save()
             
             # Send credentials after successful validation
@@ -329,6 +331,7 @@ class EmployeeDeleteView(View):
         """
         Display confirmation page for employee deletion.
         """
+        print('GET method called')
         employee = get_object_or_404(User, id=id)
         return render(request, self.template_name, {
             'employee': employee,
@@ -342,6 +345,7 @@ class EmployeeDeleteView(View):
         employee = get_object_or_404(User, id=id)
         try:
             employee.delete()
+            print('POST called')
             messages.success(request, f"Employee '{employee.get_full_name()}' has been deleted successfully.")
             return redirect('users:ceo_employees_list')
         except Exception as e:
@@ -361,7 +365,7 @@ class HRDashboardView(TemplateView):
         all_employees = User.objects.filter(is_superuser=False)
 
         context.update({
-            'total_employees': all_employees.count(),
+            'total_employees': all_employees.exclude(is_activated=False).count(),
             'pending_validations': all_employees.filter(is_activated=False, role__in=["MANAGER", "EMPLOYEE"]).count(),
             'new_this_month': all_employees.filter(
                 date_joined__month=timezone.now().month, 
@@ -554,9 +558,9 @@ class EmployeeListView(ListView):
         queryset = User.objects.exclude(is_superuser=True).order_by('last_name', 'first_name') # Start with all non-superusers
 
         if user.is_superuser:
-            # CEO sees all activated employees
-            queryset = queryset.filter(is_activated=True)
-            messages.info(self.request, "Displaying all activated employees.")
+            # CEO sees all employees
+            # queryset = queryset.filter(is_activated=True)
+            messages.info(self.request, "Displaying all registered employees.")
         elif user.role == 'HR_MANAGER':
             # HR Manager sees all employees (activated and non-activated)
             messages.info(self.request, "Displaying all registered employees (including those awaiting validation).")
@@ -687,7 +691,7 @@ class EmployeeDeleteSuccessView(TemplateView):
         context = super().get_context_data(**kwargs)
         context.update({
             'company_name': getattr(settings, 'COMPANY_NAME', 'ATI Smart Platform'),
-            'redirect_url': reverse_lazy('users:hr_dashboard')
+            'redirect_url': reverse_lazy('users:ceo_dashboard')
         })
         return context
     
