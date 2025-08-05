@@ -9,12 +9,22 @@ services:
     region: frankfurt  # or choose a region closer to your users
     buildCommand: |
       # Install production dependencies
-      pip install -r requirements-prod.txt
+      pip install --upgrade pip
+      pip install -r requirements-prod.txt --no-cache-dir
+      # Install spacy model
+      python -m spacy download en_core_web_sm
       # Collect static files
-      python manage.py collectstatic --noinput
+      python manage.py collectstatic --noinput --clear
       # Run migrations
-      python manage.py migrate
-    startCommand: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src
+      python manage.py migrate --noinput
+    startCommand: |
+      gunicorn src.Ati_smart_platform.wsgi:application \
+        --pythonpath ./src \
+        --log-file - \
+        --workers 4 \
+        --threads 4 \
+        --timeout 120 \
+        --bind 0.0.0.0:10000
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9  # Match runtime.txt Python version
