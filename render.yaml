@@ -14,7 +14,7 @@ services:
     startCommand: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.16  # Match your local Python version
+        value: 3.11.9  # Match runtime.txt Python version
       - key: DJANGO_SETTINGS_MODULE
         value: Ati_smart_platform.settings
       - key: ENVIRONMENT
