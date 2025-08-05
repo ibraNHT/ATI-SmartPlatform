@@ -1,0 +1,37 @@
+# Render configuration file
+# Documentation: https://render.com/docs/infrastructure-as-code
+
+services:
+  # Web service
+  - type: web
+    name: ati-smart-platform
+    env: python
+    region: frankfurt  # or choose a region closer to your users
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+    startCommand: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.16  # Match your local Python version
+      - key: DJANGO_SETTINGS_MODULE
+        value: Ati_smart_platform.settings
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+    plan: free  # or 'standard' for production
+    numInstances: 1
+    healthCheckPath: /
+    autoDeploy: true
+
+  # PostgreSQL database (uncomment and configure if needed)
+  # - type: postgres
+  #   name: ati-smart-platform-db
+  #   plan: free  # or 'standard' for production
+  #   databaseName: ati_smart_platform
+  #   user: ati_user
+  #   region: frankfurt  # should match web service region

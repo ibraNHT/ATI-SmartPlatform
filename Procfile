@@ -1,0 +1,1 @@
+web: gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src --log-file -

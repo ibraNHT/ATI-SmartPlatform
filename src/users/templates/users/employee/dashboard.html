@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+
+{% block title %}My Dashboard | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+    <!-- Welcome Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-primary">
+                <i class="fas fa-user-circle me-2"></i> Welcome, {{ user.get_full_name }}
+            </h1>
+            <p class="text-muted mb-0">
+                <i class="fas fa-briefcase me-1"></i> {{ user.job_title }} • 
+                <i class="fas fa-users me-1"></i> {{ user.department }} • 
+                <i class="fas fa-user-tie me-1"></i> Manager: {{ employee_manager.get_full_name }}
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="badge bg-primary rounded-pill p-2">
+                <i class="fas fa-calendar-day me-1"></i> {% now "F j, Y" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <!-- Pending Tasks -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-lg border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Pending Tasks</h6>
+                            <h2 class="mb-0">{{ pending_tasks.count }}</h2>
+                            <small class="text-muted">{{ overdue_tasks.count }} overdue</small>
+                        </div>
+                        <div class="icon-circle bg-warning-light">
+                            <i class="fas fa-tasks text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed This Week -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-lg border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Completed This Week</h6>
+                            <h2 class="mb-0">{{ completed_this_week.count }}</h2>
+                            <small class="text-muted">{{ productivity_score }}% productivity</small>
+                        </div>
+                        <div class="icon-circle bg-success-light">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming 1:1s -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-lg border-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Upcoming 1:1</h6>
+                            {% if next_one_on_one %}
+                            <h2 class="mb-0">{{ next_one_on_one.meeting_date|date:"M j" }}</h2>
+                            <small class="text-muted">{{ next_one_on_one.meeting_date|time }}</small>
+                            {% else %}
+                            <h2 class="mb-0">None</h2>
+                            <small class="text-muted">No meetings scheduled</small>
+                            {% endif %}
+                        </div>
+                        <div class="icon-circle bg-info-light">
+                            <i class="fas fa-comments text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PTO Balance -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-start-lg border-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">PTO Balance</h6>
+                            <h2 class="mb-0">{{ pto_balance }}</h2>
+                            <small class="text-muted">{{ pto_used }} days used</small>
+                        </div>
+                        <div class="icon-circle bg-primary-light">
+                            <i class="fas fa-umbrella-beach text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Tasks Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> My Tasks</h5>
+                    <div>
+                        <a href="#" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-plus me-1"></i> New Task
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for task in recent_tasks %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <a href="#" class="text-dark">
+                                            {{ task.title }}
+                                        </a>
+                                        {% if task.priority == 'high' %}
+                                        <span class="badge bg-danger ms-2">High</span>
+                                        {% elif task.priority == 'medium' %}
+                                        <span class="badge bg-warning ms-2">Medium</span>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">
+                                        Assigned by: {{ task.assigned_by.get_full_name }} • 
+                                        Due: {{ task.due_date|naturalday|capfirst }}
+                                        {% if task.is_overdue %}
+                                        <span class="text-danger">(Overdue)</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-eye me-2"></i> View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="fas fa-edit me-2"></i> Update
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <form method="post" action="#">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="fas fa-check-circle me-2"></i> Mark Complete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center py-4 text-muted">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i>
+                            <p class="mb-0">No tasks assigned to you</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="card-footer bg-light">
+                        <a href="#" class="btn btn-sm btn-outline-primary">
+                            View All Tasks <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manager Communication -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i> Manager Communication</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Message Form -->
+                    <form method="post" action="#" class="mb-4">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="hidden" name="recipient" value="{{ user.manager.id }}">
+                            <input type="text" name="message" 
+                                class="form-control" 
+                                placeholder="Send a quick message to your manager..." 
+                                required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Recent Messages -->
+                    <h6 class="text-muted mb-3">Recent Messages</h6>
+                    <div class="list-group list-group-flush mb-3" style="max-height: 300px; overflow-y: auto;">
+                        {% for message in recent_messages %}
+                        <div class="list-group-item">
+                            <div class="d-flex">
+                                {% comment %} <img src="{{ message.sender.personal_picture.url|default:'/static/images/logo.png' }}" {% endcomment %}
+                                <img src={% static "images/logo.png" %}
+                                    class="rounded-circle me-2" width="40" height="40">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {{ message.sender.get_full_name }}
+                                        <small class="text-muted ms-2">{{ message.timestamp|naturaltime }}</small>
+                                    </h6>
+                                    <p class="mb-0">{{ message.content }}</p>
+                                    {% if message.is_unread %}
+                                    <span class="badge bg-primary rounded-pill">New</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                            <p class="mb-0">No recent messages</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                        View All Messages <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="row mt-4">
+        <!-- Upcoming Events -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for event in upcoming_events %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ event.title }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ event.start_time|date:"M j, Y" }} • 
+                                        {{ event.start_time|time }} - {{ event.end_time|time }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{{ event.get_type_class }}">
+                                    {{ event.get_event_type_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                            <p class="mb-0">No upcoming events</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-rocket me-2"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 h-100 py-3">
+                                <i class="fas fa-umbrella-beach fa-2x mb-2"></i>
+                                <h6>Request Time Off</h6>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 py-3">
+                                <i class="fas fa-receipt fa-2x mb-2"></i>
+                                <h6>Submit Expense</h6>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-info w-100 h-100 py-3">
+                                <i class="fas fa-comment-dots fa-2x mb-2"></i>
+                                <h6>Give Feedback</h6>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="btn btn-outline-warning w-100 h-100 py-3">
+                                <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                                <h6>View Training</h6>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .icon-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

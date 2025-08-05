@@ -1,0 +1,8 @@
+[deploy]
+branch = "your-branch-name"  # Replace with your desired branch name
+
+[build]
+command = "python manage.py collectstatic --noinput && python manage.py migrate"
+
+[run]
+command = "gunicorn src.Ati_smart_platform.wsgi:application --pythonpath ./src"

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create HR Manager | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-user-plus me-2"></i> Create HR Manager
+                        </h3>
+                        <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="animate__animated animate__fadeIn animate__delay-1s">
+                        {% csrf_token %}
+                        
+                        <!-- Form Sections as Cards -->
+                        <div class="card mb-4 border-primary">
+                            <div class="card-header bg-primary-light">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-id-card me-2"></i> Personal Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.first_name|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.last_name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.personal_email|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.address|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.phone_number|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.gender|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.birth_date|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.personal_picture|as_crispy_field }}
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+
+                        <div class="card mb-4 border-success">
+                            <div class="card-header bg-success-light">
+                                <h5 class="mb-0 text-success">
+                                    <i class="fas fa-briefcase me-2"></i> Professional Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.department|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.role|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.professional_email|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.job_title|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.start_date|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.joined_files|as_crispy_field }}
+                                    </div>
+                                </div>    
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.role_description|as_crispy_field }}
+                                    </div>
+                                </div> 
+                        </div>
+
+                        <div class="card mb-4 border-danger">
+                            <div class="card-header bg-danger-light">
+                                <h5 class="mb-0 text-danger">
+                                    <i class="fas fa-key me-2"></i> Login Credentials
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.username|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.password|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    These credentials will be emailed to the HR Manager.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-undo me-2"></i> Reset
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Create HR Manager
+                            </button>
+                        </div>
+                    </form>
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-primary-light {
+        background-color: rgba(52, 152, 219, 0.15);
+    }
+    .bg-success-light {
+        background-color: rgba(46, 204, 113, 0.15);
+    }
+    .bg-danger-light {
+        background-color: rgba(231, 76, 60, 0.15);
+    }
+    .card-header h5 {
+        font-weight: 600;
+    }
+    /* Custom file input button */
+    .custom-file-input:lang(en)::after {
+        content: "Browse";
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date picker for the birth date and the start date
+    const startDateField = document.getElementById('id_start_date');
+    if (startDateField) {
+        startDateField.type = 'date';
+    }
+    // Date picker for the birth date and the start date
+    const birthDateField = document.getElementById('id_birth_date');
+    if (birthDateField) {
+        birthDateField.type = 'date';
+    }
+    
+    // Password toggle
+    const passwordField = document.getElementById('id_password');
+    if (passwordField) {
+        passwordField.insertAdjacentHTML('afterend', 
+            '<span class="input-group-text toggle-password" style="cursor:pointer;">' +
+            '<i class="fas fa-eye"></i></span>');
+        
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+    // Make the department and the role read only
+    
+});
+
+
+</script>
+{% endblock %}

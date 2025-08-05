@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Employee Registered | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg animate__animated animate__zoomIn">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <!-- Add an animated circle user adding icon here with the <i> tag -->
+                        <i class="fas fa-user-plus fa-5x text-secondary animate__animated animate__bounceIn"></i>
+                    </div>
+                    
+                    <h2 class="text-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i> Employee Registered Successfully!
+                    </h2>
+                    
+                    <p class="lead mb-4">
+                        {{ employee.get_full_name }} has been added to the system and is pending CEO validation.
+                    </p>
+                    
+                    <div class="alert alert-info animate__animated animate__fadeIn animate__delay-1s">
+                        <i class="fas fa-info-circle me-2"></i>
+                        The CEO will be notified to validate this employee's account.
+                    </div>
+                    
+                    <div class="d-grid gap-3 col-md-8 mx-auto mt-4">
+                        <a href="{% url 'users:create_employee' %}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i> Register Another
+                        </a>
+                        <a href="{% url 'users:hr_dashboard' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i> Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-top: 4px solid var(--secondary-green);
+    }
+</style>
+{% endblock %}

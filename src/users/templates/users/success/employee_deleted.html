@@ -1,0 +1,15 @@
+<!-- templates/users/success/employee_deleted.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="alert alert-success animate__animated animate__fadeInUp">
+        <h4 class="alert-heading">Success!</h4>
+        <p>The employee account has been deleted.</p>
+        <hr>
+        <a href="{{ redirect_url }}" class="btn btn-primary">
+            Return to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

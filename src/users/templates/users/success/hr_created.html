@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HR Manager Created | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg animate__animated animate__zoomIn">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-tie me-2"></i> HR Manager Account Created
+                    </h3>
+                </div>
+                
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope fa-4x text-primary mb-3 animate__animated animate__tada animate__delay-1s"></i>
+                        <h4 class="text-primary">Credentials Sent!</h4>
+                    </div>
+                    
+                    <div class="alert alert-success animate__animated animate__fadeIn">
+                        <p class="mb-2">The main HR Manager Mr/Ms <strong>{{ created_hr_name }}</strong>'s account has been succesfully created</p>
+                        <p class="mb-0">Login details have been sent to <strong><a href= "mailto:{{ created_hr_email }}">{{ created_hr_email }}</a></strong></p>
+                    </div>
+                    
+                    <div class="d-grid gap-3 col-md-8 mx-auto mt-4">
+                        <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt me-2"></i> Go back to the Dashboard
+                        </a>
+                        {% comment %} <a href="{% url 'create_hr' %}" class="btn btn-outline-success">
+                            <i class="fas fa-plus me-2"></i> Create Another
+                        </a> {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

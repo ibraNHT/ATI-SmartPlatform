@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% comment %} The template showing the user details according to this view class AboutMeView(View):
+    template_name = 'users/auth/about_me.html'
+    
+    @method_decorator(login_required)
+    def get(self, request):
+        return render(request, self.template_name, {
+            'user': request.user,
+            'company_name': settings.COMPANY_NAME
+        }) {% endcomment %}
+{% block title %}About Me | {{ company_name }}{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i> About Me
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ user.personal_picture.url|default:'/static/images/logo.png' }}" 
+                            class="rounded-circle" 
+                            width="150" 
+                            height="150"
+                            alt="{{ user.get_full_name }}">
+                    </div>
+                    <h4 class="text-center mb-3">{{ user.get_full_name }}</h4>
+                    <p class="text-center">
+                        <strong>Employee ID:</strong> {{ user.employee_id }}<br>
+                        <strong>Department:</strong> {{ user.department }}<br>
+                        <strong>Role:</strong> {{ user.get_role_display }}<br>
+                        <strong>Email:</strong> {{ user.personal_email }}, {{user.email}}
+                    </p>
+                    <hr>
+                    <h5 class="mb-3">Personal Information</h5>
+                    <p>
+                        <strong>First Name:</strong> {{ user.first_name }}<br>
+                        <strong>Last Name:</strong> {{ user.last_name }}<br>
+                        <strong>Date of Birth:</strong> {{ user.date_of_birth|date:"M d, Y" }}<br>
+                        <strong>Phone Number:</strong> {{ user.phone_number|default:"Not provided" }}
+                    </p>
+                    <hr>
+                    <h5 class="mb-3">Professional Information</h5>
+                    <p>
+                        <strong>Professional Email:</strong> {{ user.professional_email|default:"Not provided" }}<br>
+                        <strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y" }}<br>
+                        <strong>Status:</strong> {% if user.is_activated %}Active{% else %}Pending{% endif %}
+                    </p>
+                    <hr>
+                    <h5 class="mb-3">Actions</h5>
+                    <div class="d-flex justify-content-between">
+                        {% comment %} <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+                            <i class="fas fa-user-edit me-1"></i> Edit Profile
+                        </a>
+                        <a href="{% url 'users:change_password' %}" class="btn btn-secondary">
+                            <i class="fas fa-lock me-1"></i> Change Password
+                        </a> {% endcomment %}
+                        <a href="{% url 'users:logout' %}" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% comment %} The template for the CEO dashboard, displaying key statistics and quick actions. {% endcomment %}
+{% block title %}CEO Dashboard | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeInDown">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-tachometer-alt me-2"></i> CEO Dashboard
+        </h1>
+        <div class="badge bg-success rounded-pill p-2">
+            <i class="fas fa-crown me-1"></i> ADMIN PRIVILEGES
+        </div>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row mb-4">
+        <!-- Total Employees -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInLeft">
+            <div class="card border-start-lg border-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Total Employees</h6>
+                            <h2 class="mb-0">{{ total_employees }}</h2>
+                        </div>
+                        <div class="icon-circle bg-primary-light">
+                            <i class="fas fa-users text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Validations -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInLeft animate__delay-1s">
+            <div class="card border-start-lg border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Pending Validations</h6>
+                            <h2 class="mb-0">{{ pending_validations }}</h2>
+                        </div>
+                        <div class="icon-circle bg-warning-light">
+                            <i class="fas fa-user-clock text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HR Managers -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInRight animate__delay-1s">
+            <div class="card border-start-lg border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Managers</h6>
+                            <h2 class="mb-0">{{ total_managers }}</h2>
+                        </div>
+                        <div class="icon-circle bg-success-light">
+                            <i class="fas fa-user-tie text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Departments -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInRight">
+            <div class="card border-start-lg border-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase text-muted mb-2">Departments</h6>
+                            <h2 class="mb-0">{{ total_departments }}</h2>
+                        </div>
+                        <div class="icon-circle bg-info-light">
+                            <i class="fas fa-building text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Pending Validations -->
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4 animate__animated animate__fadeInUp">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    {% comment %} Verify if there is not a HR Manager yet {% endcomment %}
+                    {% if not total_hr_managers %}
+                    <a href="{% url 'users:create_hr' %}" class="btn btn-success w-100 mb-3">
+                        <i class="fas fa-user-plus me-2"></i> Create HR Manager
+                    </a>
+                    {% endif %}
+                    {% comment %} <a href="{% url 'users:validate_employees' %}" class="btn btn-primary w-100 mb-3"> {% endcomment %}
+                    <a href="{% url 'users:ceo_employees_list' %}" class="btn btn-primary w-100 bg-dark text-white mb-3">
+                        <i class="fas fa-user-check me-2"></i> View and manage employees
+                    </a>
+                    {% comment %} Add another actions option here for financial data, task management and others {% endcomment %}
+                    <a href="#" class="btn btn-info w-100 mb-3">
+                        <i class="fas fa-chart-line me-2"></i> Financial Overview
+                    </a>
+                    <a href="#" class="btn btn-warning w-100 mb-3">
+                        <i class="fas fa-tasks me-2"></i> Task Management
+                    </a>
+                    <a href="#" class="btn btn-secondary w-100 mb-3">
+                        <i class="fas fa-file-alt me-2"></i> Generate Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Validations Table -->
+        <div class="col-lg-8 animate__animated animate__fadeInUp animate__delay-1s">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Pending Validations</h5>
+                        <span class="badge bg-white text-primary">{{ pending_users|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in pending_users %}
+                                <tr class="animate__animated animate__fadeIn">
+                                    <td>
+                                        <img src= {% static "images/logo.png" %}
+                                        {% comment %} <img src="{{ user.personal_picture.url|default:'/static/images/default-profile.png' }}"  {% endcomment %}
+                                            class="rounded-circle me-2" 
+                                            width="30" 
+                                            height="30">
+                                        {{ user.get_full_name }}
+                                    </td>
+                                    <td>{{ user.department }}</td>
+                                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% comment %} <a href="{% url 'users:validate_employee' user.employee_id %}"  {% endcomment %}
+                                        <a href={% url "users:ceo_employees_list" %}
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> See more
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                                        <p class="mb-0">No pending validations</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom card accents */
+    .border-start-lg {
+        border-left-width: 4px !important;
+    }
+    
+    /* Icon circles */
+    .icon-circle {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .bg-primary-light {
+        background-color: rgba(52, 152, 219, 0.1);
+    }
+    
+    .bg-success-light {
+        background-color: rgba(46, 204, 113, 0.1);
+    }
+    
+    /* Hover effects */
+    .card:hover {
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+    }
+    
+    /* Table styling */
+    .table-hover tbody tr:hover {
+        background-color: rgba(52, 152, 219, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add animation to table rows
+document.addEventListener('DOMContentLoaded', function() {
+    const tableRows = document.querySelectorAll('.table-hover tbody tr');
+    tableRows.forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.05}s`;
+    });
+    
+    // Tooltip initialization
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

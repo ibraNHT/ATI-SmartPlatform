@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Logout | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout Confirmation
+                    </h3>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="{% static 'images/logout-image.svg' %}" 
+                            alt="Logout" 
+                            class="img-fluid" 
+                            style="max-height: 150px;">
+                    </div>
+                    
+                    <h4 class="text-center mb-4">Are you sure you want to log out?</h4>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <!-- Cancel Button -->
+                        <a href="{% url 'dashboard' %}" 
+                        class="btn btn-outline-primary animate__animated animate__fadeInLeft">
+                        <i class="fas fa-arrow-left me-2"></i> Cancel
+                        </a>
+                        
+                        <!-- Logout Button -->
+                        <form method="post" action="{% url 'users:logout' %}" class="animate__animated animate__fadeInRight">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <small class="text-muted">
+                        Secure access to {{ company_name }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-outline-primary {
+        transition: all 0.3s;
+    }
+    .btn-outline-primary:hover {
+        transform: translateX(-3px);
+    }
+    .btn-danger {
+        transition: all 0.3s;
+        background-color: var(--secondary-green);
+        border-color: var(--secondary-green);
+    }
+    .btn-danger:hover {
+        transform: translateX(3px);
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+    }
+</style>
+{% endblock %}

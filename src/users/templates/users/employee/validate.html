@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Validate Employee | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-user-check me-2"></i> Validate Employee
+                        </h3>
+                        <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Employee Summary -->
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-info-light">
+                            <h5 class="mb-0 text-info">
+                                <i class="fas fa-info-circle me-2"></i> Employee Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    {% if employee.personal_picture %}
+                                        <img src="{{employee.personal_picture.url}}" 
+                                            class="rounded-circle mb-3" 
+                                            width="120" 
+                                            height="120">
+                                    {% else %}
+                                        <img src={% static "images/logo.png" %}
+                                            class="rounded-circle mb-3" 
+                                            width="120" 
+                                            height="120">
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Name:</strong> {{ employee.get_full_name }}</p>
+                                            <p><strong>Department:</strong> {{ employee.department }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Role:</strong> {{ employee.get_role_display }}</p>
+                                            <p><strong>Registered On:</strong> {{ employee.date_joined|date:"M d, Y" }}</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <p class="mb-1"><strong>Personal Email:</strong> {{ employee.personal_email }}</p>
+                                    <p class="mb-0"><strong>Professional Email:</strong> {{ employee.professional_email|default:"Not provided" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Validation Form -->
+                    <form method="post" class="animate__animated animate__fadeIn animate__delay-1s">
+                        {% csrf_token %}
+                        
+                        <div class="card mb-4 border-success">
+                            <div class="card-header bg-success-light">
+                                <h5 class="mb-0 text-success">
+                                    <i class="fas fa-key me-2"></i> Set Credentials
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.username|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% comment %} <div class="input-group"> {% endcomment %}
+                                            {{ form.password|as_crispy_field }}
+                                            <button type="button" 
+                                                    class="btn btn-outline-secondary" 
+                                                    id="generatePassword">
+                                                <i class="fas fa-random me-1"></i> Generate
+                                            </button>
+                                        {% comment %} </div> {% endcomment %}
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    These credentials will be emailed to the employee at <strong>{{ employee.personal_email }}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'users:ceo_dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i> Validate Employee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-primary-light {
+        background-color: rgba(52, 152, 219, 0.15);
+    }
+    .bg-info-light {
+        background-color: rgba(52, 152, 219, 0.15);
+    }
+    .bg-success-light {
+        background-color: rgba(46, 204, 113, 0.15);
+    }
+    .profile-img-container {
+        border: 3px solid var(--primary-blue);
+        border-radius: 50%;
+        padding: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% comment %} <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password generator
+    document.getElementById('generatePassword').addEventListener('click', function() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+        let password = '';
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('id_password').value = password;
+    });
+
+    // Password toggle
+    const passwordField = document.getElementById('id_password');
+    if (passwordField) {
+        passwordField.insertAdjacentHTML('afterend', 
+            '<span class="input-group-text toggle-password" style="cursor:pointer;margin-top:4px;">' +
+            '<i class="fas fa-eye"></i></span>');
+        
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+});
+</script> {% endcomment %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date picker for the birth date and the start date
+    const startDateField = document.getElementById('id_start_date');
+    if (startDateField) {
+        startDateField.type = 'date';
+    }
+    // Date picker for the birth date and the start date
+    const birthDateField = document.getElementById('id_birth_date');
+    if (birthDateField) {
+        birthDateField.type = 'date';
+    }
+    
+    // Password toggle
+    const passwordField = document.getElementById('id_password');
+    if (passwordField) {
+        passwordField.insertAdjacentHTML('afterend', 
+            '<span class="input-group-text toggle-password" style="cursor:pointer;">' +
+            '<i class="fas fa-eye"></i></span>');
+        
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

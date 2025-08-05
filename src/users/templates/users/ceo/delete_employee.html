@@ -1,0 +1,35 @@
+<!-- templates/users/hr_manager/delete_confirmation.html -->
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirm Deletion</h2>
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <strong>Warning: Permanent Action</strong>
+        </div>
+        <div class="card-body">
+            <p>You are about to permanently delete:</p>
+            <ul class="list-group mb-4">
+                <li class="list-group-item"><strong>Name:</strong> {{ employee.get_full_name }}</li>
+                <li class="list-group-item"><strong>Department:</strong> {{ employee.department }}</li>
+                <li class="list-group-item"><strong>Role:</strong> {{ employee.get_role_display }}</li>
+            </ul>
+            
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Confirm Deletion
+                    </button>
+                    <a href="{% url 'users:ceo_view_employee' employee.id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

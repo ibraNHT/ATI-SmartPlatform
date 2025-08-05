@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | {{ company_name }}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --secondary-green: #2ecc71;
+            --dark-accent: #2c3e50;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            background: white;
+            border-top: 4px solid var(--primary-blue);
+            animation: animate__fadeIn 0.6s;
+        }
+        
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .brand-logo {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+        
+        .brand-name {
+            color: var(--dark-accent);
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .brand-subtitle {
+            color: var(--primary-blue);
+            font-weight: 400;
+        }
+        
+        .input-group-text {
+            background-color: white;
+            border-right: none;
+            color: var(--primary-blue);
+        }
+        
+        .form-control {
+            border-left: none;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+            border-color: var(--primary-blue);
+        }
+        
+        .btn-login {
+            background-color: var(--secondary-green);
+            border: none;
+            padding: 10px 0;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .password-toggle {
+            cursor: pointer;
+            color: var(--primary-blue);
+            background: white;
+            border-left: none;
+        }
+        
+        .remember-me {
+            color: var(--dark-accent);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--secondary-green);
+            border-color: var(--secondary-green);
+        }
+    </style>
+</head>
+<body class="animate__animated animate__fadeIn">
+    <div class="container d-flex justify-content-center">
+        <div class="login-container animate__animated animate__zoomIn">
+            <!-- Brand Header -->
+            <div class="brand-header">
+                <img src="{% static 'images/logo.png' %}" alt="{{ company_name }}" class="brand-logo">
+                <h1 class="brand-name">{{ company_name }}</h1>
+                <p class="brand-subtitle">Smart Management Platform</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form method="post" action="{% url 'users:login' %}">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" 
+                            placeholder="Enter your username" required>
+                    </div>
+                </div>
+                
+                <!-- Password Field -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password" 
+                            placeholder="Enter your password" required>
+                        <span class="input-group-text password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Remember Me -->
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                    <label class="form-check-label remember-me" for="remember">Remember me</label>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-login btn-block w-100 mt-4">
+                    <i class="fas fa-sign-in-alt me-2"></i> LOGIN
+                </button>
+                
+                <!-- Error Messages -->
+                {% if form.errors %}
+                <div class="alert alert-danger mt-3 animate__animated animate__shakeX">
+                    Invalid username or password. Please try again.
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+        
+        // Add animation to form elements
+        document.querySelectorAll('.form-control').forEach((el, index) => {
+            el.style.animation = `animate__fadeInUp 0.4s ${index * 0.1}s both`;
+        });
+    </script>
+</body>
+</html>

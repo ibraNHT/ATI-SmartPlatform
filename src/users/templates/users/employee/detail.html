@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% comment %}
+    This template displays a success message after an employee has been registered.
+    It includes a success icon, a message indicating the employee's registration status,
+    and buttons to register another employee or return to the HR dashboard.
+{% endcomment %}
+
+{% block title %}Employee Details | {{ company_name }}{% endblock %}
+{% comment %} The CEO template to look at the employee details, a button to validate him if not validated yet and a button to delete him  {% endcomment %}
+
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-user-check me-2"></i> Employee Details
+                </h3>
+                {% comment %} Manage the back link according to the connected user {% endcomment %}
+                {% if connected_user.is_superuser %}
+                <a href="{% url 'users:ceo_employees_list' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Employee List
+                </a>
+                {% elif connected_user.role == 'HR_MANAGER' %}
+                <a href="{% url 'users:hr_employees_list' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Employee List
+                </a>
+                {% elif connected_user.role == 'MANAGER' %}
+                <a href="{% url 'users:manager_employees_list' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Department Employee List 
+                </a>
+                {% else %}
+                <a href="{% url 'users:employee_dashboard' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Employee Summary -->
+            <div class="card mb-4 border-info">
+                <div class="card-header bg-info-light">
+                    <h5 class="mb-0 text-info">
+                        <i class="fas fa-info-circle me-2"></i> Employee Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            {% comment %} <img src="{{ employee.personal_picture.url|default:'/static/images/default-profile.png' }}"  {% endcomment %}
+                            <img src={% static "images/logo.png" %}
+                                class="rounded-circle mb-3" 
+                                width="120" 
+                                height="120" alt="{{ employee.get_full_name }}">
+                        </div>
+                        <div class="col-md-9">
+                            <p><strong>Name:</strong> {{ employee.get_full_name }}</p>
+                            <p><strong>Department:</strong> {{ employee.department }}</p>
+                            <p><strong>Role:</strong> {{ employee.get_role_display }}</p>
+                            <p><strong>Registered On:</strong> {{ employee.date_joined|date:"M d, Y" }}</p>
+                            <p><strong>Email:</strong> {{ employee.personal_email }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation Actions -->
+            {% if not employee.is_activated and connected_user.is_superuser %}
+                <a href="{% url 'users:validate_employee' employee.id %}" class="btn btn-success mb-2">
+                    <i class="fas fa-check me-1"></i> Validate Employee
+                </a>
+            <!-- Delete the employee if he is already validated -->
+            {% elif employee.is_activated and connected_user.is_superuser %}
+                <a href="{% url 'users:ceo_delete_employee' employee.id %}" class="btn btn-danger mb-2">
+                    <i class="fas fa-trash-alt"></i> Delete Employee
+                </a>
+            {% endif %}
+            <!-- Additional Actions only for the CEO and the HR Manager  -->
+            {% comment %} Check if the connected user is a superuser or HR Manager to show additional actions {% endcomment %}
+            {% if connected_user.is_superuser or connected_user.role == "HR_MANAGER" %}
+                {% if connected_user.role == "HR_MANAGER" and not employee.is_activated %}
+                    <a href="{% url 'users:hr_edit_employee' employee.id %}" class="btn btn-primary mb-2">
+                        <i class="fas fa-edit me-1"></i> Edit Employee
+                    </a>
+                {% endif %}
+                <a href="#" class="btn btn-secondary mb-2">
+                    <i class="fas fa-file-alt me-1"></i> View Documents
+                </a>
+                <a href="#" class="btn btn-info mb-2">
+                    <i class="fas fa-calendar-check me-1"></i> Attendance Records
+                </a>
+                <a href="#" class="btn btn-warning mb-2">
+                    <i class="fas fa-chart-line me-1"></i> Performance Metrics
+                </a>
+                
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock scripts %}

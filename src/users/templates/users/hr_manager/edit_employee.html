@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Employee | {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-user-edit me-2"></i> Update Employee
+                        </h3>
+                        <a href="{% url 'users:hr_dashboard' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left me-1"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="animate__animated animate__fadeIn animate__delay-1s">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="card mb-4 border-primary">
+                            <div class="card-header bg-primary-light">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-user-circle me-2"></i> Personal Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{ form.first_name|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.last_name|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.personal_email|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.phone_number|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.address|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.gender|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.birth_date|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.personal_picture|as_crispy_field }}
+                                        {% if form.instance.personal_picture %}
+                                            <div class="mt-2">
+                                                <small>Current:</small>
+                                                <img src="{{ form.instance.personal_picture.url }}" class="img-thumbnail" width="100">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="card mb-4 border-success">
+                            <div class="card-header bg-success-light">
+                                <h5 class="mb-0 text-success">
+                                    <i class="fas fa-briefcase me-2"></i> Professional Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{ form.department|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.role|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form.job_title|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.start_date|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.role_description|as_crispy_field }}
+                                    </div>
+                                </div>
+                                {{ form.joined_files|as_crispy_field }}
+                                {% if form.instance.joined_files %}
+                                    <div class="mt-2">
+                                        <small>Current Files:</small>
+                                        <a href="{{ form.instance.joined_files.url }}" target="_blank">
+                                            {{ form.instance.joined_files.name|cut:"employee_files/" }}
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'users:hr_dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Update Employee
+                            </button>
+                        </div>
+                    </form>
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {{ form.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date picker initialization
+    const startDateField = document.getElementById('id_start_date');
+    if (startDateField) {
+        startDateField.type = 'date';
+    }
+    
+    // Department-Job Title dynamic relationship
+    const departmentField = document.getElementById('id_department');
+    const jobTitleField = document.getElementById('id_job_title');
+    
+    if (departmentField && jobTitleField) {
+        // Initialize with current value
+        const currentJob = "{{ form.instance.job_title }}";
+        if (currentJob) {
+            const option = document.createElement('option');
+            option.value = currentJob;
+            option.textContent = currentJob;
+            option.selected = true;
+            jobTitleField.appendChild(option);
+        }
+        
+        departmentField.addEventListener('change', function() {
+            const departmentJobs = {
+                'HR': ['HR Manager', 'Recruiter', 'Payroll Specialist'],
+                'IT': ['Developer', 'System Admin', 'QA Engineer'],
+                // Add other departments
+            };
+            
+            const selectedDept = this.value;
+            jobTitleField.innerHTML = '';
+            
+            if (departmentJobs[selectedDept]) {
+                departmentJobs[selectedDept].forEach(job => {
+                    const option = document.createElement('option');
+                    option.value = job;
+                    option.textContent = job;
+                    jobTitleField.appendChild(option);
+                });
+            }
+        });
+    }
+    
+    // Show current image preview when new image selected
+    const pictureInput = document.getElementById('id_personal_picture');
+    if (pictureInput) {
+        pictureInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('picture-preview');
+                    if (!preview) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.id = 'picture-preview';
+                        previewDiv.className = 'mt-2';
+                        previewDiv.innerHTML = '<small>New Preview:</small><br>' + 
+                            '<img src="' + event.target.result + '" class="img-thumbnail" width="100">';
+                        pictureInput.parentNode.appendChild(previewDiv);
+                    } else {
+                        preview.innerHTML = '<small>New Preview:</small><br>' + 
+                            '<img src="' + event.target.result + '" class="img-thumbnail" width="100">';
+                    }
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
