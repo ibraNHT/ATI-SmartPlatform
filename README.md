@@ -1,7 +1,55 @@
 # ATI-SmartPlatform
 Hybrid and Web App for ATI Information and operations Systems.
 
-# Project Specifications
+## Requirements
+
+This project uses different requirement files for different environments:
+
+- `requirements-prod.txt`: Production dependencies (used in deployment)
+- `requirements-dev.txt`: Development dependencies (includes production deps)
+- `requirements-windows.txt`: Windows-specific dependencies (for local development on Windows)
+
+## Local Development Setup
+
+1. **Create a virtual environment**:
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate  # On Windows
+   source venv/bin/activate  # On macOS/Linux
+   ```
+
+2. **Install development dependencies**:
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+   
+   For Windows development, also run:
+   ```bash
+   pip install -r requirements-windows.txt
+   ```
+
+3. **Set up environment variables**:
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env` as needed
+
+## Deployment
+
+This project is configured for deployment on [Render](https://render.com).
+
+### Render Deployment
+
+1. Push your code to your GitHub repository
+2. Connect your repository to Render
+3. Configure the following environment variables in Render:
+   - `DJANGO_SETTINGS_MODULE`: `Ati_smart_platform.settings`
+   - `ENVIRONMENT`: `production`
+   - `SECRET_KEY`: Generate a secure key
+   - `DATABASE_URL`: Your PostgreSQL connection string
+   - Other required environment variables from `.env.prod`
+
+4. The deployment will automatically use `requirements-prod.txt` for installing dependencies
+
+## Project Specifications
 
 # Project architecture 
 ATI-SmartPlatform/ <!-- The repository name-->

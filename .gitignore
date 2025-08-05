@@ -3,6 +3,57 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Development environment files
+.env
+.env.*
+!.env.example
+venv*/
+.venv/
+.python-version
+
+# Development database
+*.sqlite3
+*.db
+
+# Local development
+local_settings.py
+
+# Windows specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Media and static files (handled by collectstatic in production)
+media/
+staticfiles/
+
+# Node modules (if any)
+node_modules/
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
 # C extensions
 *.so
 

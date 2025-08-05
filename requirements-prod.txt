@@ -1,0 +1,37 @@
+# Core Dependencies
+Django==4.2.21
+django-crispy-forms==2.4
+django-bootstrap-v5==1.0.11
+django-static-fontawesome==6.5.2.0
+crispy-bootstrap5==2025.4
+whitenoise==6.6.0
+
+# Database
+psycopg2-binary==2.9.10
+dj-database-url==3.0.0
+
+# ASGI Server
+gunicorn==20.1.0
+
+# Environment Management
+python-dotenv==1.1.0
+
+# Security
+argon2-cffi==23.1.0
+
+# Utils
+Pillow==11.2.1
+python-dateutil==2.9.0
+pytz==2025.1
+
+# Add other essential packages your application needs
+# Remove or comment out unused packages
+
+# If you need ML/NLP capabilities, uncomment these with specific versions
+# torch==2.0.1  # Specify a version with pre-built wheels for Linux
+# numpy==1.24.3
+# spacy==3.5.3
+
+# If you need async support
+# uvicorn==0.22.0
+# httpx==0.24.1

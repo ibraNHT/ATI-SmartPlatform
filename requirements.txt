@@ -111,17 +111,13 @@ pycparser==2.22
 pydantic==2.11.4
 pydantic_core==2.33.2
 Pygments==2.19.1
-pyinstaller==6.12.0
-pyinstaller-hooks-contrib==2025.1
+# Windows-only packages removed: pyinstaller, pywin32, pywin32-ctypes, pywinpty
 pyparsing==3.2.1
 python-box==6.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 python-json-logger==3.2.1
 pytz==2025.1
-pywin32==308
-pywin32-ctypes==0.2.3
-pywinpty==2.0.15
 PyYAML==6.0.2
 pyzmq==26.2.1
 referencing==0.36.2
