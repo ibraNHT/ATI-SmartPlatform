@@ -1,9 +1,9 @@
 # Windows-specific dependencies for development
 pywin32==308
 pywin32-ctypes==0.2.3
-pywinpty==2.0.15
+pywinpty==2.0.10
 pyinstaller==6.12.0
 pyinstaller-hooks-contrib==2025.1
 
 # Include all production dependencies
--r requirements.txt
+-r requirements-prod.txt

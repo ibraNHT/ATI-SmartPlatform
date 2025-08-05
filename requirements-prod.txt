@@ -24,13 +24,19 @@ Pillow==11.2.1
 python-dateutil==2.9.0
 pytz==2025.1
 
-# Add other essential packages your application needs
-# Remove or comment out unused packages
+# NLP/ML Packages
+spacy==3.7.4  # Latest version compatible with Python 3.11
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+thinc==8.2.3  # Compatible version with spacy 3.7.x
+srsly==2.4.8
+wasabi==1.1.3
 
-# If you need ML/NLP capabilities, uncomment these with specific versions
-# torch==2.0.1  # Specify a version with pre-built wheels for Linux
-# numpy==1.24.3
-# spacy==3.5.3
+# ML/DL
+torch==2.2.1  # Stable version with Linux wheels
+numpy==1.26.4  # Compatible with torch 2.2.x
+
+# Other essential packages
 
 # If you need async support
 # uvicorn==0.22.0
