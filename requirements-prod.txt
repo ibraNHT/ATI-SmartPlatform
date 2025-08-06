@@ -24,17 +24,26 @@ Pillow==11.2.1
 python-dateutil==2.9.0
 pytz==2025.1
 
-# NLP/ML Packages
-spacy==3.7.4  # Latest version compatible with Python 3.11
+# NLP/ML Packages with pre-built wheels
+--find-links https://download.pytorch.org/whl/torch_stable.html
+--extra-index-url https://pypi.nvidia.com
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Use CPU-only PyTorch for better compatibility
+torch==2.2.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+numpy==1.26.4
+
+# Use a smaller spaCy model and specify CPU-only build
+spacy==3.7.4
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
-thinc==8.2.3  # Compatible version with spacy 3.7.x
+thinc==8.2.3
 srsly==2.4.8
 wasabi==1.1.3
 
-# ML/DL
-torch==2.2.1  # Stable version with Linux wheels
-numpy==1.26.4  # Compatible with torch 2.2.x
+# Force CPU-only build for spaCy
+transformers==4.38.2  # If using transformers
+sentence-transformers==2.2.2  # If using sentence transformers
 
 # Other essential packages
 

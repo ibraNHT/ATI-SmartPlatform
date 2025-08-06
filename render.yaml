@@ -8,13 +8,19 @@ services:
     env: python
     region: frankfurt  # or choose a region closer to your users
     buildCommand: |
-      # Install production dependencies
-      pip install --upgrade pip
-      pip install -r requirements-prod.txt --no-cache-dir
-      # Install spacy model
-      python -m spacy download en_core_web_sm
+      # Install system dependencies
+      apt-get update && apt-get install -y gcc g++
+      
+      # Install Python dependencies
+      python -m pip install --upgrade pip
+      python -m pip install --no-cache-dir -r requirements-prod.txt
+      
+      # Install spacy model (using smaller model for production)
+      python -m spacy download en_core_web_sm --no-deps
+      
       # Collect static files
       python manage.py collectstatic --noinput --clear
+      
       # Run migrations
       python manage.py migrate --noinput
     startCommand: |
